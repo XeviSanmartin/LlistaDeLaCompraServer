@@ -35,9 +35,15 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+
     // Driver de SQLite
     implementation("org.xerial:sqlite-jdbc:$sqlite_jdbc_version")
+    runtimeOnly("org.xerial:sqlite-jdbc:${sqlite_jdbc_version}")
+
+    //Encriptador per als paswords
+    implementation("org.mindrot:jbcrypt:0.4")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.xerial:sqlite-jdbc:${sqlite_jdbc_version}")
 }

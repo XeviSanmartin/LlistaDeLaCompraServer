@@ -1,3 +1,5 @@
+package cat.montilivi.lallistadelacompra.db
+
 import cat.montilivi.cat.montilivi.lallistadelacompra.db.Categories
 import cat.montilivi.cat.montilivi.lallistadelacompra.db.LlistesDeLaCompra
 import cat.montilivi.cat.montilivi.lallistadelacompra.db.Productes
@@ -17,7 +19,9 @@ object DatabaseFactory {
     fun init() {
         // Configuració de SQLite. 'llistes_de_la_compra.db' es crearà a l'arrel del projecte.
         val jdbcURL = "jdbc:sqlite:./llistes_de_la_compra.db"
-        val database = Database.connect(jdbcURL, "org.xerial.sqlite.JDBC")
+        //Aquesta línia donava error de classnotfound
+        //val database = Database.connect(jdbcURL, "org.xerial.sqlite.JDBC")
+        val database = Database.connect(jdbcURL, driver = "org.xerial.sqlite.JDBC")
 
         // Activa el suport de claus foranes (Foreign Keys) en SQLite (important!)
         transaction(database) {

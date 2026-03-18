@@ -6,12 +6,12 @@ import java.util.UUID
 object RepositoriDeProductes {
     fun obtenTots():List<Producte> {
         return listOf(
-            Producte(UUID.randomUUID().toString(), "Llet", "6", 2, "litres", null),
-            Producte(UUID.randomUUID().toString(), "Pa", "1", 1, "barra", null),
-            Producte(UUID.randomUUID().toString(), "Poma", "2", 6, "unitats", null),
-            Producte(UUID.randomUUID().toString(), "Enciam", "3", 1, "unitat", null),
-            Producte(UUID.randomUUID().toString(), "Pollastre", "4", 1, "kg", null),
-            Producte(UUID.randomUUID().toString(), "Salmó", "5", 500, "gr", null)
+            Producte(0, "Llet", 0,),
+            Producte(1, "Pa", 1, ),
+            Producte(2, "Poma", 2),
+            Producte(3, "Enciam", 3),
+            Producte(4, "Pollastre", 4),
+            Producte(5, "Salmó", 5)
         )
     }
 }

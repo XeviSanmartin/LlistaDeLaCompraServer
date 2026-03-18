@@ -6,12 +6,12 @@ import java.util.UUID
 object RepositoriDeCategories {
     fun obtenTotes():List<Categoria>{
         return listOf(
-            Categoria(UUID.randomUUID().toString(), "Altres"),
-            Categoria(UUID.randomUUID().toString(), "Fruites"),
-            Categoria(UUID.randomUUID().toString(), "Verdures"),
-            Categoria(UUID.randomUUID().toString(), "Carns"),
-            Categoria(UUID.randomUUID().toString(), "Peixos"),
-            Categoria(UUID.randomUUID().toString(), "Lactis")
+            Categoria(0, "Altres"),
+            Categoria(1, "Fruites"),
+            Categoria(2, "Verdures"),
+            Categoria(3, "Carns"),
+            Categoria(4, "Peixos"),
+            Categoria(5, "Lactis")
         )
     }
 }
