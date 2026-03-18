@@ -3,7 +3,8 @@ package cat.montilivi.cat.montilivi.lallistadelacompra.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Categoria(
+data class LlistaDeLaCompra(
     val id: Int,
-    val nomCategoria: String
+    val nomLlista: String,
+    val idPropietari: Int,
 )

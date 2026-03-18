@@ -1,5 +1,6 @@
 package cat.montilivi
 
+import cat.montilivi.cat.montilivi.lallistadelacompra.module
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*

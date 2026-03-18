@@ -1,11 +1,12 @@
 package cat.montilivi.cat.montilivi.lallistadelacompra.model
 
-data class Produte(
-    val idProducte:String,
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Producte(
+    val id:Int,
     val nomProducte:String,
-    val idCategoria:String,
-    val quantitat:Int,
-    val unitats: String,
-    val idUsuari: String?
+    val idCategoria:Int,
+
 )
 
