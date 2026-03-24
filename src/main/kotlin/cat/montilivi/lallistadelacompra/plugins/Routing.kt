@@ -1,7 +1,8 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.plugins
+package cat.montilivi.lallistadelacompra.plugins
 
-import cat.montilivi.cat.montilivi.lallistadelacompra.repositori.RepositoriDeCategories
-import cat.montilivi.cat.montilivi.lallistadelacompra.repositori.RepositoriDeProductes
+import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
+import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
+import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.html.respondHtml
@@ -87,14 +88,19 @@ fun Application.configureRouting() {
         //Versió amb enrutaments niuats extraient la lògica a una funció
         rutesHtml()
 
+        route("/usuaris"){
+            get{
+                call.respond(RepositoriUsuaris.obtenTots())
+            }
+        }
         route("/categories"){
             get{
-                call.respond(RepositoriDeCategories.obtenTotes())
+                call.respond(RepositoriCategories.obtenTotes())
             }
         }
         route("/productes"){
             get{
-                call.respond(RepositoriDeProductes.obtenTots())
+                call.respond(FAKERepositoriDeProductes.obtenTots())
             }
         }
     }

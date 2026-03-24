@@ -1,6 +1,6 @@
 ktor:
     application:
         modules:
-            - cat.montilivi.cat.montilivi.lallistadelacompra.ApplicationKt.module
+            - cat.montilivi.lallistadelacompra.ApplicationKt.module
     deployment:
         port: 8080

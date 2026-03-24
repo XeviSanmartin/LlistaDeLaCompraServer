@@ -1,11 +1,11 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.repositori
+package cat.montilivi.lallistadelacompra.repositori
 
 import cat.montilivi.lallistadelacompra.db.DatabaseFactory.dbQuery
-import cat.montilivi.cat.montilivi.lallistadelacompra.db.UsuarisAmics
-import cat.montilivi.cat.montilivi.lallistadelacompra.db.Usuaris
-import cat.montilivi.cat.montilivi.lallistadelacompra.model.CampActualitzable
-import cat.montilivi.cat.montilivi.lallistadelacompra.model.Usuari
-import cat.montilivi.cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
+import cat.montilivi.lallistadelacompra.db.UsuarisAmics
+import cat.montilivi.lallistadelacompra.db.Usuaris
+import cat.montilivi.lallistadelacompra.model.CampActualitzable
+import cat.montilivi.lallistadelacompra.model.Usuari
+import cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
@@ -18,7 +18,7 @@ import org.jetbrains.exposed.sql.update
 
 
 
-class RepositoriUsuaris {
+object RepositoriUsuaris {
     suspend fun creaUsuari(nom_usuari: String, password_usuari: String, alias_usuari:String?): Usuari? = dbQuery {
         val insertStatement = Usuaris.insert {
             it[nomusuari] = nom_usuari
@@ -60,7 +60,7 @@ class RepositoriUsuaris {
         }
     }
 
-    suspend fun obtenTotsUsuaris(): List<Usuari> = dbQuery {
+    suspend fun obtenTots(): List<Usuari> = dbQuery {
         Usuaris.selectAll().map { it.toUsuari() }
     }
 

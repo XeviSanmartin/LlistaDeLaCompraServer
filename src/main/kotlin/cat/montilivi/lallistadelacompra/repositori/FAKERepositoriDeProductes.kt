@@ -1,9 +1,8 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.repositori
+package cat.montilivi.lallistadelacompra.repositori
 
-import cat.montilivi.cat.montilivi.lallistadelacompra.model.Producte
-import java.util.UUID
+import cat.montilivi.lallistadelacompra.model.Producte
 
-object RepositoriDeProductes {
+object FAKERepositoriDeProductes {
     fun obtenTots():List<Producte> {
         return listOf(
             Producte(0, "Llet", 0,),

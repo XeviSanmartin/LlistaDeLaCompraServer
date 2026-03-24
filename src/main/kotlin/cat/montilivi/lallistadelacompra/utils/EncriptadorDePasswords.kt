@@ -1,4 +1,4 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.utils
+package cat.montilivi.lallistadelacompra.utils
 
 import org.mindrot.jbcrypt.BCrypt
 

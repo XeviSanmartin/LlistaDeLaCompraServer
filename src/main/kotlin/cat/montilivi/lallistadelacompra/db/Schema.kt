@@ -1,4 +1,4 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.db
+package cat.montilivi.lallistadelacompra.db
 
 import org.jetbrains.exposed.sql.Table
 import java.time.LocalDateTime

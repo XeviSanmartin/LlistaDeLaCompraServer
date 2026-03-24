@@ -1,9 +1,8 @@
-package cat.montilivi.cat.montilivi.lallistadelacompra.repositori
+package cat.montilivi.lallistadelacompra.repositori
 
-import cat.montilivi.cat.montilivi.lallistadelacompra.model.Categoria
-import java.util.UUID
+import cat.montilivi.lallistadelacompra.model.Categoria
 
-object RepositoriDeCategories {
+object FAKERepositoriDeCategories {
     fun obtenTotes():List<Categoria>{
         return listOf(
             Categoria(0, "Altres"),
