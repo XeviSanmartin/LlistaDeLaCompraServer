@@ -1,14 +1,20 @@
 package cat.montilivi.lallistadelacompra.plugins
 
+import cat.montilivi.lallistadelacompra.model.SessioUsuari
 import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
+import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.clear
+import io.ktor.server.sessions.sessions
+import io.ktor.server.sessions.set
 import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.div
@@ -106,6 +112,37 @@ fun Application.configureRouting() {
         route("/productes"){
             get{
                 call.respond(FAKERepositoriDeProductes.obtenTots())
+            }
+        }
+
+
+        post("/login") {
+            val params = call.receiveParameters()
+            val user = params["user"]
+            val pass = params["pass"]
+
+            // 1. Validem amb el UserRepository + BCrypt
+            val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(user ?: "", pass ?: "")
+
+            if (usuariDB != null) {
+                // 2. CREEM la sessió (Ktor enviarà la Cookie automàticament)
+                call.sessions.set(SessioUsuari(idUsuari = usuariDB.id, nomUsuari = usuariDB.nomUsuari))
+                call.respondText("Login correcte!")
+            } else {
+                call.respond(HttpStatusCode.Unauthorized, "Credencials invàlides")
+            }
+        }
+
+        authenticate("auth-session") {
+            get("/perfil") {
+                val sessioUsuari = call.principal<SessioUsuari>()
+                call.respondText("Hola ${sessioUsuari?.nomUsuari}, la teva ID és ${sessioUsuari?.idUsuari}")
+            }
+
+            post("/logout") {
+                // 3. DESTRUÏM la sessió
+                call.sessions.clear<SessioUsuari>()
+                call.respondText("Sessió tancada")
             }
         }
     }
