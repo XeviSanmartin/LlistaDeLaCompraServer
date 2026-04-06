@@ -1,6 +1,7 @@
 package cat.montilivi.lallistadelacompra.repositori
 
 import cat.montilivi.lallistadelacompra.db.DatabaseFactory.dbQuery
+import cat.montilivi.lallistadelacompra.db.LlistesPropietaris
 import cat.montilivi.lallistadelacompra.db.UsuarisAmics
 import cat.montilivi.lallistadelacompra.db.Usuaris
 import cat.montilivi.lallistadelacompra.model.CampActualitzable
@@ -146,16 +147,54 @@ object RepositoriUsuaris {
             .map{it.toUsuari()}
     }
 
+
+
+    /**
+     * Afegeix un usuari a la llista de gent que pot veure la llista de la compra
+     */
+    suspend fun afegeixLlistaVisible(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
+        val relacioJaExisteix = LlistesPropietaris
+            .selectAll()
+            .where { (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista) }
+            .empty()
+            .not()
+
+        if (relacioJaExisteix) return@dbQuery false
+
+        LlistesPropietaris.insert {
+            it[LlistesPropietaris.idUsuari] = idUsuari
+            it[LlistesPropietaris.idLlista] = idLlista
+        }
+        true
+    }
+
+    /**
+     * Elimina un usuari a la llista de gent que pot veure la llista de la compra
+     */
+    suspend fun eliminaLlistaVisible(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
+        LlistesPropietaris.deleteWhere {
+            (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista)
+        } > 0
+    }
+
     suspend fun eliminaUsuari(id: Int): Boolean = dbQuery {
+        LlistesPropietaris.deleteWhere { LlistesPropietaris.idUsuari eq id }
         Usuaris.deleteWhere { Usuaris.id eq id } > 0
     }
 
     private fun ResultRow.toUsuari(): Usuari {
+        val idUsuari = this[Usuaris.id]
+        val idsLlistesVisibles = LlistesPropietaris
+            .selectAll()
+            .where { LlistesPropietaris.idUsuari eq idUsuari }
+            .map { it[LlistesPropietaris.idLlista] }
+
         return Usuari(
-            id = this[Usuaris.id],
+            id = idUsuari,
             alias = this[Usuaris.alias],
             nomUsuari = this[Usuaris.nomusuari],
-            password = this[Usuaris.password]
+            password = this[Usuaris.password],
+            idsLlistesVisibles = idsLlistesVisibles
         )
     }
 }

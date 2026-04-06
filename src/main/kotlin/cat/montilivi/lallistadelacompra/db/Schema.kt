@@ -1,7 +1,6 @@
 package cat.montilivi.lallistadelacompra.db
 
 import org.jetbrains.exposed.sql.Table
-import java.time.LocalDateTime
 
 /**
  * TAULA D'USUARIS
@@ -37,14 +36,23 @@ object Productes : Table("productes") {
 }
 /**
  * TAULA DE LLISTES DE LA COMPRA
- * Una llista pertany a un propietari, però pot ser vista per altres.
  */
 object LlistesDeLaCompra : Table("llistes_de_compra") {
     val id = integer("id").autoIncrement()
     val nomLlista = varchar("nom", 100)
-    val idPropietari = integer("id_propietari") references Usuaris.id
 
     override val primaryKey = PrimaryKey(id)
+}
+
+
+/**
+ * RELACIO LLISTA -> PROPIETARIS
+ */
+object LlistesPropietaris : Table("llistes_propietaris") {
+    val idLlista = integer("id_llista") references LlistesDeLaCompra.id
+    val idUsuari = integer("id_usuari") references Usuaris.id
+
+    override val primaryKey = PrimaryKey(idLlista, idUsuari)
 }
 
 /**

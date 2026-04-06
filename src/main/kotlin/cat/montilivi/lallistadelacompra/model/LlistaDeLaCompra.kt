@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class LlistaDeLaCompra(
     val id: Int,
     val nomLlista: String,
-    val idPropietari: Int,
+    val idsPropietaris: List<Int> = emptyList(),
 )

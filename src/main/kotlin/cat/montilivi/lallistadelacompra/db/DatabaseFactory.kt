@@ -35,6 +35,7 @@ object DatabaseFactory {
                 Categories,
                 Productes,
                 LlistesDeLaCompra,
+                LlistesPropietaris,
                 ProductesDeLaLlista,
                 UsuarisAmics
             )
@@ -127,13 +128,24 @@ object DatabaseFactory {
 
                 val idLlista1 = LlistesDeLaCompra.insert {
                     it[nomLlista]    = "Compra setmanal Joan"
-                    it[idPropietari] = idJoan
                 } get LlistesDeLaCompra.id
 
                 val idLlista2 = LlistesDeLaCompra.insert {
                     it[nomLlista]    = "Festa d'aniversari"
-                    it[idPropietari] = idMaria
                 } get LlistesDeLaCompra.id
+
+                LlistesPropietaris.insert {
+                    it[LlistesPropietaris.idLlista] = idLlista1
+                    it[LlistesPropietaris.idUsuari] = idJoan
+                }
+                LlistesPropietaris.insert {
+                    it[LlistesPropietaris.idLlista] = idLlista1
+                    it[LlistesPropietaris.idUsuari] = idMaria
+                }
+                LlistesPropietaris.insert {
+                    it[LlistesPropietaris.idLlista] = idLlista2
+                    it[LlistesPropietaris.idUsuari] = idMaria
+                }
 
                 logger.info("Seed: 2 llistes inserides.")
 
@@ -234,7 +246,7 @@ object DatabaseFactory {
                 val maria = RepositoriUsuaris.cercaUsuariPerNomUsuari("maria")
 
                 if (joan != null && maria != null) {
-                    val llista1 = RepositoriLlistaDeLaCompra.creaLlista("Compra setmanal Joan", joan.id)
+                    val llista1 = RepositoriLlistaDeLaCompra.creaLlista("Compra setmanal Joan", listOf(joan.id, maria.id))
                     val llista2 = RepositoriLlistaDeLaCompra.creaLlista("Festa d'aniversari",   maria.id)
                     logger.info("Seed: 2 llistes inserides.")
 

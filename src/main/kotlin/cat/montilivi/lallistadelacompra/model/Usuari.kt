@@ -7,5 +7,6 @@ data class Usuari(
     val id: Int,
     val alias: String?,
     val nomUsuari: String,
-    val password:String
+    val password:String,
+    val idsLlistesVisibles: List<Int> = emptyList()
 )
