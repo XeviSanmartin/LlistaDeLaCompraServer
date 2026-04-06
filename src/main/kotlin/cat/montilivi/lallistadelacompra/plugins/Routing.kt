@@ -5,6 +5,7 @@ import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
 import io.ktor.server.html.respondHtml
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -93,11 +94,15 @@ fun Application.configureRouting() {
                 call.respond(RepositoriUsuaris.obtenTots())
             }
         }
-        route("/categories"){
-            get{
-                call.respond(RepositoriCategories.obtenTotes())
+
+        authenticate("auth-basic") {
+            route("/categories"){
+                get{
+                    call.respond(RepositoriCategories.obtenTotes())
+                }
             }
         }
+
         route("/productes"){
             get{
                 call.respond(FAKERepositoriDeProductes.obtenTots())

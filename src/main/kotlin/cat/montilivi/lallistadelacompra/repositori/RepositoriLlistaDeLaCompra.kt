@@ -20,13 +20,12 @@ object RepositoriLlistaDeLaCompra {
         creaLlista(nomLlista, listOf(idPropietari))
 
     suspend fun creaLlista(nomLlista: String, idsPropietaris: List<Int>): LlistaDeLaCompra? = dbQuery{
-        if (idsPropietaris.isEmpty()) return@dbQuery  null
+        if (idsPropietaris.isEmpty()) return@dbQuery null
 
         val insertStatement = LlistesDeLaCompra.insert {
             it[LlistesDeLaCompra.nomLlista] = nomLlista
         }
-        val fila = insertStatement.resultedValues?.singleOrNull() ?: return@dbQuery
-        null
+        val fila = insertStatement.resultedValues?.singleOrNull() ?: return@dbQuery null
         val idLlista = fila[LlistesDeLaCompra.id]
         val propietaris = idsPropietaris.distinct()
 
