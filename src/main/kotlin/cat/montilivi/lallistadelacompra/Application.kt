@@ -18,5 +18,5 @@ fun Application.module() {
     DatabaseFactory.poblaLaBBDDUtilitzantElsRepositoris()
     configureSecurity(RepositoriUsuaris)
     configureSerialization()
-    configureRouting()
+    configureRouting(RepositoriUsuaris)
 }

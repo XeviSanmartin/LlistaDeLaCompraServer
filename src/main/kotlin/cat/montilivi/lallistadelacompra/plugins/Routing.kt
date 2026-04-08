@@ -6,6 +6,7 @@ import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
@@ -23,7 +24,7 @@ import kotlinx.html.p
 import kotlinx.html.head
 import kotlinx.html.title
 
-fun Application.configureRouting() {
+fun Application.configureRouting(userRepository: RepositoriUsuaris) {
     routing {
         get("/") {
             call.respondText("Hello World!")
@@ -104,6 +105,10 @@ fun Application.configureRouting() {
         authenticate("auth-basic") {
             route("/categories"){
                 get{
+                    // Recuperem la identitat de qui està trucant
+                    val principal = call.principal<UserIdPrincipal>()
+                    val nom = principal?.name
+                    //call.respondText("Benvingut, ${principal?.name}! Aquesta és la teva zona privada.")
                     call.respond(RepositoriCategories.obtenTotes())
                 }
             }

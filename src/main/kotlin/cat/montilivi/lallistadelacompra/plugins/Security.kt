@@ -15,12 +15,25 @@ import io.ktor.server.sessions.Sessions
 import io.ktor.server.sessions.cookie
 import io.ktor.server.sessions.maxAge
 import io.ktor.util.hex
-import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 
 fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
+
+    // 1. Configurem el magatzem de sessions (necessari per a la de sessió)
+    install(Sessions) {
+        cookie<SessioUsuari>("USER_SESSION") {
+            cookie.path = "/"
+            cookie.maxAge = 1.toDuration(unit = DurationUnit.DAYS)// La sessió dura 1 dia
+            // En producció, afegiríem .extensions["SameSite"] = "Strict"
+
+            // Xifratge de la cookie (Molt important perquè l'usuari no la pugui editar)
+            val secretSignKey = hex("68656c6c6f6f72646572313233") // Una clau secreta de 16+ caràcters
+            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
+        }
+    }
+
     install(Authentication) {
 
         // Autenticació bàsica
@@ -47,9 +60,9 @@ fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
                 // --- AQUÍ FEM LA VALIDACIÓ REAL ---
                 // Busquem l'usuari a la base de dades per la seva ID guardada a la sessió
                 //Si s'esborra un usuari però encara té la cookie activa, això impediria el seu accès
-                val userExists = RepositoriUsuaris.cercaUsuariPerId(sessio.idUsuari)
+                val existeixUsuari = RepositoriUsuaris.cercaUsuariPerId(sessio.idUsuari)
 
-                if (userExists != null) {
+                if (existeixUsuari != null) {
                     // Si l'usuari encara existeix, la sessió és vàlida
                     sessio
                 } else {
@@ -65,18 +78,7 @@ fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
 
     }
 
-    // 1. Configurem el magatzem de sessions (necessari per a la de sessió)
-    install(Sessions) {
-        cookie<SessioUsuari>("USER_SESSION") {
-            cookie.path = "/"
-            cookie.maxAge = 1.toDuration(unit = DurationUnit.DAYS)// La sessió dura 1 dia
-            // En producció, afegiríem .extensions["SameSite"] = "Strict"
 
-            // Xifratge de la cookie (Molt important perquè l'usuari no la pugui editar)
-            val secretSignKey = hex("68656c6c6f6f72646572313233") // Una clau secreta de 16+ caràcters
-            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
-        }
-    }
 
 
 }
