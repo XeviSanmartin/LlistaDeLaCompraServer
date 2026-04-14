@@ -135,11 +135,13 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
             if (usuariDB != null) {
                 // 2. CREEM la sessió (Ktor enviarà la Cookie automàticament)
                 call.sessions.set(SessioUsuari(idUsuari = usuariDB.id, nomUsuari = usuariDB.nomUsuari))
-                call.respondText("Login correcte!")
+                //Deactivem aquesta resposta, perquè tan sols es pot contestar una vegada i non ens
+                //deixaria enviar el token. Afego, el missatge amb el token
+                //call.respondText("Login correcte!")
 
                 // 3. Generem el token
                 val token = generaToken(usuariDB.id)
-                call.respond(mapOf("token" to token))
+                call.respond(mapOf("missatge" to "Login correcte", "token" to token))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Credencials invàlides")
             }
