@@ -45,7 +45,7 @@ dependencies {
 
     //Autentificació
     implementation("io.ktor:ktor-server-auth")
-    //implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("io.ktor:ktor-server-auth-jwt")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

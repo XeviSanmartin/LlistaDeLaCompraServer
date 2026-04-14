@@ -3,11 +3,15 @@ package cat.montilivi.lallistadelacompra.plugins
 import cat.montilivi.lallistadelacompra.model.SessioUsuari
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.basic
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.session
 import io.ktor.server.response.respond
 import io.ktor.server.sessions.SessionTransportTransformerMessageAuthentication
@@ -21,7 +25,7 @@ import kotlin.time.toDuration
 
 fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
 
-    // 1. Configurem el magatzem de sessions (necessari per a la de sessió)
+    // Configurem el magatzem de sessions (necessari per a la de sessió)
     install(Sessions) {
         cookie<SessioUsuari>("USER_SESSION") {
             cookie.path = "/"
@@ -33,6 +37,12 @@ fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
             transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
         }
     }
+
+    // Llegim la configuració del YAML  (Necessari per a JWT)
+    val jwtSecret = environment.config.property("jwt.secret").getString()
+    val jwtIssuer = environment.config.property("jwt.issuer").getString()
+    val jwtAudience = environment.config.property("jwt.audience").getString()
+    val jwtRealm = environment.config.property("jwt.realm").getString()
 
     install(Authentication) {
 
@@ -73,6 +83,27 @@ fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
             challenge {
                 // Què passa si no té sessió? Redirigim o donem error
                 call.respond(io.ktor.http.HttpStatusCode.Unauthorized, "Sessió no iniciada")
+            }
+        }
+
+        jwt("auth-jwt") {
+            realm = jwtRealm
+            verifier(//comprova que el token és vàlid, no ha caducat i ha estat emès per nosaltres
+                JWT.require(Algorithm.HMAC256(jwtSecret))
+                    .withAudience(jwtAudience)
+                    .withIssuer(jwtIssuer)
+                    .build()
+            )
+            validate { credential ->
+                // Verifiquem que el token contingui el camp "userId"
+                if (credential.payload.getClaim("userId").asInt() != null) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
+            }
+            challenge { defaultScheme, realm ->
+                call.respond(io.ktor.http.HttpStatusCode.Unauthorized, "Token no vàlid o caducat")
             }
         }
 
