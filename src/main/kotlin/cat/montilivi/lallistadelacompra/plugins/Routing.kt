@@ -1,6 +1,7 @@
 package cat.montilivi.lallistadelacompra.plugins
 
 import cat.montilivi.lallistadelacompra.model.SessioUsuari
+import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
@@ -114,25 +115,31 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
             }
         }
 
-        route("/productes"){
-            get{
-                call.respond(FAKERepositoriDeProductes.obtenTots())
+        authenticate("auth-jwt") {
+            route("/productes") {
+                get {
+                    call.respond(FAKERepositoriDeProductes.obtenTots())
+                }
             }
         }
 
 
         post("/login") {
-            val params = call.receiveParameters()
-            val user = params["user"]
-            val pass = params["pass"]
+            val parametres = call.receiveParameters()
+            val usuari = parametres["username"] // En aquest moment estic decidint com cal que es diguin els paràmetres
+            val motDePas = parametres["password"]  // que m'han de passar per iniciar sessió
 
             // 1. Validem amb el UserRepository + BCrypt
-            val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(user ?: "", pass ?: "")
+            val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(usuari ?: "", motDePas ?: "")
 
             if (usuariDB != null) {
                 // 2. CREEM la sessió (Ktor enviarà la Cookie automàticament)
                 call.sessions.set(SessioUsuari(idUsuari = usuariDB.id, nomUsuari = usuariDB.nomUsuari))
                 call.respondText("Login correcte!")
+
+                // 3. Generem el token
+                val token = generaToken(usuariDB.id)
+                call.respond(mapOf("token" to token))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Credencials invàlides")
             }

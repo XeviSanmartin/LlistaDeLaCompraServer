@@ -54,6 +54,7 @@ object RepositoriUsuaris {
             if (EncriptadorDePasswords.check(password_usuari, hashedPass)) {
                 fila.toUsuari()
             } else {
+
                 null // Contrasenya incorrecta
             }
         } else {

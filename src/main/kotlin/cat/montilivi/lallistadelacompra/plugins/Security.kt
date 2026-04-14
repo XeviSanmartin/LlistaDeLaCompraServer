@@ -96,7 +96,8 @@ fun Application.configureSecurity(userRepository: RepositoriUsuaris) {
             )
             validate { credential ->
                 // Verifiquem que el token contingui el camp "userId"
-                if (credential.payload.getClaim("userId").asInt() != null) {
+                if (credential.payload.getClaim("idUsuari").asInt() != null) {
+                    //asInt perquè volem l'id de la BBDD no del login
                     JWTPrincipal(credential.payload)
                 } else {
                     null
