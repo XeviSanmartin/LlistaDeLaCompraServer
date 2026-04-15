@@ -153,7 +153,7 @@ object RepositoriUsuaris {
     /**
      * Afegeix un usuari a la llista de gent que pot veure la llista de la compra
      */
-    suspend fun afegeixLlistaVisible(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
+    suspend fun afegeixComAPropietariAUnaLlista(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
         val relacioJaExisteix = LlistesPropietaris
             .selectAll()
             .where { (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista) }
