@@ -202,8 +202,13 @@ private fun Routing.rutesV1() {
     }
 }
 
-private fun Routing.rutesHtml() {
-            route ("html"){
+
+//Cal assegurar-se que rutesHtml s'estengui de Route (la classe base)
+// i no de Routing (l'arrel), per permetre que s'insereixi correctament
+// en qualsevol part de l'arbre (com dins d'un authenticate).
+//private fun Routing.rutesHtml() {
+private fun Route.rutesHtml() {
+            route ("/html"){
             get{
                 call.respondHtml (status = HttpStatusCode.OK) {
                     head {
