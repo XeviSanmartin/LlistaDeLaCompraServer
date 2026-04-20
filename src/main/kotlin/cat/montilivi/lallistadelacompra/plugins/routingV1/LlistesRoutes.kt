@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.PeticioLlistaNova
+import cat.montilivi.lallistadelacompra.model.PeticioLlista
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -34,7 +34,7 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
             val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt()
 
             // Llegim el nom de la llista del JSON que ens envia el client
-            val request = call.receive<PeticioLlistaNova>()
+            val request = call.receive<PeticioLlista>()
 
             if (idUsuari != null) {
                 val idLlista = RepositoriLlistesDeLaCompra.creaLlista(request.nom, idUsuari)
@@ -44,12 +44,12 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
 
         // PATCH: Actualitzar el nom d'una llista específica
         // URL: /llistes/7
-        patch("/{id}") {
+        patch("/{idLlista}") {
             val principal = call.principal<JWTPrincipal>()
             val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt() ?: return@patch call.respond(HttpStatusCode.Unauthorized)
 
             val llistaId = call.parameters["idLlista"]?.toIntOrNull() ?: return@patch call.respond(HttpStatusCode.BadRequest)
-            val request = call.receive<PeticioLlistaNova>() // Reutilitzem el model que té el camp "nom"
+            val request = call.receive<PeticioLlista>() // Reutilitzem el model que té el camp "nom"
 
             val exit = RepositoriLlistesDeLaCompra.actualitzaNomLlista(llistaId, request.nom, idUsuari)
 
@@ -62,7 +62,7 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
 
         // DELETE: Esborrar una llista
         // URL: /llistes/7
-        delete("/{id}") {
+        delete("/{idLlista}") {
             val principal = call.principal<JWTPrincipal>()
             val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt() ?: return@delete call.respond(HttpStatusCode.Unauthorized)
 

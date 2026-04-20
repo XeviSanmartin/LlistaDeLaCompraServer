@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
@@ -28,10 +29,22 @@ object RepositoriLlistesDeLaCompra {
         val fila = insertStatement.resultedValues?.singleOrNull() ?: return@dbQuery null
         val idLlista = fila[LlistesDeLaCompra.id]
         val propietaris = idsPropietaris.distinct()
-
-        replacePropietarisIntern(idLlista, propietaris)
-
+        propietaris.forEach { idUsuari ->
+            LlistesPropietaris.insert {
+                it[LlistesPropietaris.idLlista] = idLlista
+                it[LlistesPropietaris.idUsuari] = idUsuari
+            }
+        }
         fila.toLlistaDeLaCompra()
+    }
+    private fun replacePropietarisIntern(idLlista: Int, idsPropietaris: List<Int>) {
+        LlistesPropietaris.deleteWhere { LlistesPropietaris.idLlista eq idLlista }
+        idsPropietaris.forEach { idUsuari ->
+            LlistesPropietaris.insert {
+                it[LlistesPropietaris.idLlista] = idLlista
+                it[LlistesPropietaris.idUsuari] = idUsuari
+            }
+        }
     }
 
     suspend fun cercaLlistaPerId(id: Int): LlistaDeLaCompra? = dbQuery {
@@ -47,14 +60,9 @@ object RepositoriLlistesDeLaCompra {
     }
 
     suspend fun cercaLlistesPerPropietari(idPropietari: Int): List<LlistaDeLaCompra> = dbQuery {
-        val idsLlistes = LlistesPropietaris.selectAll()
+        (LlistesDeLaCompra innerJoin LlistesPropietaris)
+            .selectAll()
             .where { LlistesPropietaris.idUsuari eq idPropietari }
-            .map { it[LlistesPropietaris.idLlista] }
-
-        if (idsLlistes.isEmpty()) return@dbQuery emptyList()
-
-        LlistesDeLaCompra.selectAll()
-            .where { LlistesDeLaCompra.id inList idsLlistes }
             .map { it.toLlistaDeLaCompra() }
     }
 
@@ -77,27 +85,13 @@ object RepositoriLlistesDeLaCompra {
             false
     }
 
-    suspend fun actualitzaPropietariLlista(id: Int, idPropietari: Int): Boolean = dbQuery {
-        actualitzaPropietarisLlista(id, listOf(idPropietari))
-    }
-
-    suspend fun actualitzaPropietarisLlista(id: Int, idsPropietaris: List<Int>): Boolean = dbQuery {
-        if (idsPropietaris.isEmpty()) return@dbQuery false
-
-        val propietaris = idsPropietaris.distinct()
-        replacePropietarisIntern(id, propietaris)
-        true
-    }
-
     // Versio amb parametres opcionals
     suspend fun actualitzaLlista(
         id: Int,
-        nomLlista: CampActualitzable<String> = CampActualitzable.SenseCanvi,
-        idsPropietaris: CampActualitzable<List<Int>> = CampActualitzable.SenseCanvi
+        nomLlista: CampActualitzable<String> = CampActualitzable.SenseCanvi
     ): Boolean = dbQuery {
         val hiHaCanvis =
-            nomLlista !is CampActualitzable.SenseCanvi ||
-            idsPropietaris !is CampActualitzable.SenseCanvi
+            nomLlista !is CampActualitzable.SenseCanvi
 
         if (!hiHaCanvis) return@dbQuery false
 
@@ -108,17 +102,7 @@ object RepositoriLlistesDeLaCompra {
             }
         } > 0
 
-        val propietarisActualitzats = when (idsPropietaris) {
-            is CampActualitzable.NouValor -> {
-                if (idsPropietaris.valor.isEmpty()) return@dbQuery false
-                val propietaris = idsPropietaris.valor.distinct()
-                replacePropietarisIntern(id, propietaris)
-                true
-            }
-            CampActualitzable.SenseCanvi -> false
-        }
-
-        nomActualitzat || propietarisActualitzats
+        nomActualitzat
     }
 
     suspend fun eliminaLlista(idLlista: Int, idUsuari:Int): Boolean = dbQuery {
@@ -134,13 +118,46 @@ object RepositoriLlistesDeLaCompra {
             false
     }
 
-    private fun replacePropietarisIntern(idLlista: Int, idsPropietaris: List<Int>) {
-        LlistesPropietaris.deleteWhere { LlistesPropietaris.idLlista eq idLlista }
-        idsPropietaris.forEach { idUsuari ->
-            LlistesPropietaris.insert {
-                it[LlistesPropietaris.idLlista] = idLlista
-                it[LlistesPropietaris.idUsuari] = idUsuari
+    suspend fun afegeixPropietariDeLlista(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
+        // Comprovem si la llista existeix
+        val llistaExisteix = LlistesDeLaCompra
+            .selectAll().where { LlistesDeLaCompra.id eq idLlista }
+            .any()
+
+        if (!llistaExisteix) return@dbQuery false
+
+        // Intentem inserir el nou propietari
+        // Fem servir insertIgnore per si l'usuari ja era propietari,
+        // així el servidor no petarà i simplement retornarà false.
+        val inserit = LlistesPropietaris.insertIgnore {
+            it[LlistesPropietaris.idUsuari] = idUsuari
+            it[LlistesPropietaris.idLlista] = idLlista
+        }.insertedCount > 0
+
+        inserit
+    }
+
+    suspend fun eliminaPropietariDeLlista(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
+
+        val propietarisRestants = LlistesPropietaris
+            .selectAll().where { LlistesPropietaris.idLlista eq idLlista }
+            .count()
+
+        //Si és l'únic propietari de la llista, eliminem la llista completament
+        if (propietarisRestants == 1L) {
+            // Primer eliminem els productes associats (si no està configurat el CASCADE a la BD)
+            ProductesDeLaLlista.deleteWhere { ProductesDeLaLlista.idLlista eq idLlista }
+            // Eliminem el vincle entre l'usuari i la llista
+            LlistesPropietaris.deleteWhere {
+                (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista)
             }
+            // Finalment eliminem la llista
+            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.id eq idLlista }>0
+        } else {
+            // Eliminem el vincle entre l'usuari i la llista
+            LlistesPropietaris.deleteWhere {
+                (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista)
+            } > 0
         }
     }
 

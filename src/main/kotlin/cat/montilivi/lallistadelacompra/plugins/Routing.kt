@@ -1,21 +1,20 @@
 package cat.montilivi.lallistadelacompra.plugins
 
-import cat.montilivi.lallistadelacompra.model.PeticioLlistaNova
 import cat.montilivi.lallistadelacompra.model.SessioUsuari
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
+import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesCategories
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesLlistesDeLaCompra
+import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductes
+import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsUsuaris
 import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
-import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
-import io.ktor.server.request.receive
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -173,31 +172,12 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
 }
 private fun Routing.rutesV1() {
     route("/V1") {
-        post("login") {
-            val parametres = call.receiveParameters()
-            val usuari = parametres["username"] // En aquest moment estic decidint com cal que es diguin els paràmetres
-            val motDePas = parametres["password"]  // que m'han de passar per iniciar sessió
 
-            // 1. Validem amb el UserRepository + BCrypt
-            val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(usuari ?: "", motDePas ?: "")
-
-            if (usuariDB != null) {
-                // 2. CREEM la sessió (Ktor enviarà la Cookie automàticament)
-                call.sessions.set(SessioUsuari(idUsuari = usuariDB.id, nomUsuari = usuariDB.nomUsuari))
-                //Deactivem aquesta resposta, perquè tan sols es pot contestar una vegada i non ens
-                //deixaria enviar el token. Afego, el missatge amb el token
-                //call.respondText("Login correcte!")
-
-                // 3. Generem el token
-                val token = generaToken(usuariDB.id)
-                call.respond(mapOf("missatge" to "Login correcte", "token" to token))
-            } else {
-                call.respond(HttpStatusCode.Unauthorized, "Credencials invàlides")
-            }
-        }
-
+        rutesDelsUsuaris()
         authenticate("auth-jwt") {
             rutesDeLesLlistesDeLaCompra()
+            rutesDeLesCategories()
+            rutesDelsProductes()
         }
     }
 }

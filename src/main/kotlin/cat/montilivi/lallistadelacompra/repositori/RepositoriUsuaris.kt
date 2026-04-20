@@ -2,6 +2,7 @@ package cat.montilivi.lallistadelacompra.repositori
 
 import cat.montilivi.lallistadelacompra.db.DatabaseFactory.dbQuery
 import cat.montilivi.lallistadelacompra.db.LlistesPropietaris
+import cat.montilivi.lallistadelacompra.db.LlistesPropietaris.idLlista
 import cat.montilivi.lallistadelacompra.db.UsuarisAmics
 import cat.montilivi.lallistadelacompra.db.Usuaris
 import cat.montilivi.lallistadelacompra.model.CampActualitzable
@@ -11,6 +12,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
@@ -113,6 +115,13 @@ object RepositoriUsuaris {
         } > 0
     }
 
+    suspend fun afegeixAmic(idUsuari: Int, nomUsuariAmic: String): Boolean = dbQuery {
+
+        cercaUsuariPerNomUsuari(nomUsuariAmic)?.let { amic ->
+            return@dbQuery afegeixAmic(idUsuari, amic.id)
+        }
+        return@dbQuery false
+    }
     suspend fun afegeixAmic(idUsuari: Int, idAmic: Int): Boolean = dbQuery {
         if (idUsuari == idAmic) return@dbQuery false
 
@@ -141,46 +150,62 @@ object RepositoriUsuaris {
         true
     }
 
+
+    suspend fun eliminaAmic(idUsuari: Int, nomUsuariAmic: String): Boolean = dbQuery {
+
+        cercaUsuariPerNomUsuari(nomUsuariAmic)?.let { amic ->
+            return@dbQuery eliminaAmic(idUsuari, amic.id)
+        }
+        return@dbQuery false
+    }
+
+    suspend fun eliminaAmic(idUsuari: Int, idAmic: Int): Boolean = dbQuery {
+        var resultat = true
+
+        if (idUsuari == idAmic) return@dbQuery false
+
+        //Mirem que existeixin tant l'usuari propi com l'amic a la taula d'usuaris
+        val usuarisExistents = Usuaris.selectAll()
+            .where { (Usuaris.id eq idUsuari) or (Usuaris.id eq idAmic) }
+            .count()
+
+        if (usuarisExistents < 2L) return@dbQuery false
+
+        val relacioJaExisteix = UsuarisAmics.selectAll()
+            .where { (UsuarisAmics.idUsuari eq idUsuari) and (UsuarisAmics.idAmic eq idAmic) }
+            .empty()
+            .not()
+
+        if (relacioJaExisteix) {
+            resultat = (UsuarisAmics.deleteWhere {
+                    ((UsuarisAmics.idUsuari eq idUsuari) and (UsuarisAmics.idAmic eq idAmic)) or
+                            ((UsuarisAmics.idUsuari eq idAmic) and (UsuarisAmics.idAmic eq idUsuari))
+                }>0)
+        }
+        return@dbQuery resultat
+
+    }
+
     suspend fun obtenAmics(idUsuari: Int): List<Usuari> = dbQuery {
         // Fem un JOIN entre la taula d'amics i la d'usuaris
-        (UsuarisAmics innerJoin Usuaris)
+        // Hem d'especificar amb quin camp fem join, perquè els dos camps
+        // d'UsuarisAmics fan referència a Usuaris.id
+        UsuarisAmics
+            .innerJoin(Usuaris, { idAmic }, { Usuaris.id }) // Aquí especifiquem: AmicID -> UsuariID
             .selectAll().where{ UsuarisAmics.idUsuari eq idUsuari }
             .map{it.toUsuari()}
     }
 
 
 
-    /**
-     * Afegeix un usuari a la llista de gent que pot veure la llista de la compra
-     */
-    suspend fun afegeixComAPropietariAUnaLlista(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
-        val relacioJaExisteix = LlistesPropietaris
-            .selectAll()
-            .where { (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista) }
-            .empty()
-            .not()
 
-        if (relacioJaExisteix) return@dbQuery false
 
-        LlistesPropietaris.insert {
-            it[LlistesPropietaris.idUsuari] = idUsuari
-            it[LlistesPropietaris.idLlista] = idLlista
-        }
-        true
-    }
-
-    /**
-     * Elimina un usuari a la llista de gent que pot veure la llista de la compra
-     */
-    suspend fun eliminaLlistaVisible(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
-        LlistesPropietaris.deleteWhere {
-            (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista)
-        } > 0
-    }
-
-    suspend fun eliminaUsuari(id: Int): Boolean = dbQuery {
-        LlistesPropietaris.deleteWhere { LlistesPropietaris.idUsuari eq id }
-        Usuaris.deleteWhere { Usuaris.id eq id } > 0
+    suspend fun eliminaUsuari(idUsuari: Int): Boolean = dbQuery {
+        LlistesPropietaris.selectAll()
+            .where { LlistesPropietaris.idUsuari eq idUsuari }
+            .map { RepositoriLlistesDeLaCompra.eliminaPropietariDeLlista(idUsuari, it[idLlista]) }
+        UsuarisAmics.deleteWhere { (UsuarisAmics.idUsuari eq idUsuari) or (UsuarisAmics.idAmic eq idUsuari)}
+        Usuaris.deleteWhere { Usuaris.id eq idUsuari } > 0
     }
 
     private fun ResultRow.toUsuari(): Usuari {

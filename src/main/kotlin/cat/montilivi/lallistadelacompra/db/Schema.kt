@@ -20,7 +20,7 @@ object Usuaris : Table("usuaris") {
  */
 object Categories : Table("categories") {
     val id = integer("id").autoIncrement()
-    val nomCategoria = varchar("nom_producte", 100)
+    val nomCategoria = varchar("nom_producte", 100).uniqueIndex()
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -29,7 +29,7 @@ object Categories : Table("categories") {
  */
 object Productes : Table("productes") {
     val id = integer("id").autoIncrement()
-    val nomProducte = varchar("nom_producte", 100)
+    val nomProducte = varchar("nom_producte", 100).uniqueIndex()
     val idCategoria = integer("id_categoria") references Categories.id
 
     override val primaryKey = PrimaryKey(id)
