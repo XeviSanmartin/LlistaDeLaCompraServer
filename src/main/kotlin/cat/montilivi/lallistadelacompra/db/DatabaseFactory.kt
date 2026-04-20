@@ -6,7 +6,7 @@ import cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProductes
-import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistaDeLaCompra
+import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -241,13 +241,13 @@ object DatabaseFactory {
             }
 
             // LLISTES DE LA COMPRA
-            if (RepositoriLlistaDeLaCompra.obtenTotes().isEmpty()) {
+            if (RepositoriLlistesDeLaCompra.obtenTotes().isEmpty()) {
                 val joan  = RepositoriUsuaris.cercaUsuariPerNomUsuari("joan")
                 val maria = RepositoriUsuaris.cercaUsuariPerNomUsuari("maria")
 
                 if (joan != null && maria != null) {
-                    val llista1 = RepositoriLlistaDeLaCompra.creaLlista("Compra setmanal Joan", listOf(joan.id, maria.id))
-                    val llista2 = RepositoriLlistaDeLaCompra.creaLlista("Festa d'aniversari",   maria.id)
+                    val llista1 = RepositoriLlistesDeLaCompra.creaLlista("Compra setmanal Joan", listOf(joan.id, maria.id))
+                    val llista2 = RepositoriLlistesDeLaCompra.creaLlista("Festa d'aniversari",   maria.id)
                     logger.info("Seed: 2 llistes inserides.")
 
                     // PRODUCTES DE LA LLISTA

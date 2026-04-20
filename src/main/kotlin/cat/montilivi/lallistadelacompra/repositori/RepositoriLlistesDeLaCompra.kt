@@ -14,7 +14,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
-object RepositoriLlistaDeLaCompra {
+object RepositoriLlistesDeLaCompra {
 
     suspend fun creaLlista(nomLlista: String, idPropietari: Int): LlistaDeLaCompra? =
         creaLlista(nomLlista, listOf(idPropietari))
@@ -63,10 +63,18 @@ object RepositoriLlistaDeLaCompra {
     }
 
     // Versio amb camps individuals
-    suspend fun actualitzaNomLlista(id: Int, nomLlista: String): Boolean = dbQuery {
-        LlistesDeLaCompra.update({ LlistesDeLaCompra.id eq id }) {
-            it[LlistesDeLaCompra.nomLlista] = nomLlista
-        } > 0
+    suspend fun actualitzaNomLlista(idLlista: Int, nomLlista: String, idUsuari: Int): Boolean = dbQuery {
+        val teAcces = LlistesPropietaris.select (
+            (LlistesPropietaris.idLlista eq idLlista) and (LlistesPropietaris.idUsuari eq idUsuari)
+        ).any()
+        if (teAcces)
+        {
+            LlistesDeLaCompra.update({ (LlistesDeLaCompra.id eq idLlista) }) {
+                it[LlistesDeLaCompra.nomLlista] = nomLlista
+            } > 0
+        }
+        else
+            false
     }
 
     suspend fun actualitzaPropietariLlista(id: Int, idPropietari: Int): Boolean = dbQuery {
@@ -113,10 +121,17 @@ object RepositoriLlistaDeLaCompra {
         nomActualitzat || propietarisActualitzats
     }
 
-    suspend fun eliminaLlista(id: Int): Boolean = dbQuery {
-        LlistesPropietaris.deleteWhere { LlistesPropietaris.idLlista eq id }
-        ProductesDeLaLlista.deleteWhere { ProductesDeLaLlista.idLlista eq id }
-        LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.id eq id } > 0
+    suspend fun eliminaLlista(idLlista: Int, idUsuari:Int): Boolean = dbQuery {
+        val teAcces = LlistesPropietaris.select (
+            (LlistesPropietaris.idLlista eq idLlista) and (LlistesPropietaris.idUsuari eq idUsuari)
+        ).any()
+        if (teAcces) {
+            LlistesPropietaris.deleteWhere { LlistesPropietaris.idLlista eq idLlista }
+            ProductesDeLaLlista.deleteWhere { ProductesDeLaLlista.idLlista eq idLlista }
+            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.id eq idLlista } > 0
+        }
+        else
+            false
     }
 
     private fun replacePropietarisIntern(idLlista: Int, idsPropietaris: List<Int>) {
