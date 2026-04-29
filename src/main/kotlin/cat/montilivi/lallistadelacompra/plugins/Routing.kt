@@ -5,6 +5,7 @@ import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesCategories
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductes
+import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductesDUnaLlista
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsUsuaris
 import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
@@ -131,7 +132,7 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
 
         post("/login") {
             val parametres = call.receiveParameters()
-            val usuari = parametres["username"] // En aquest moment estic decidint com cal que es diguin els paràmetres
+            val usuari = parametres["username"]    // En aquest moment estic decidint com cal que es diguin els paràmetres
             val motDePas = parametres["password"]  // que m'han de passar per iniciar sessió
 
             // 1. Validem amb el UserRepository + BCrypt
@@ -178,6 +179,7 @@ private fun Routing.rutesV1() {
             rutesDeLesLlistesDeLaCompra()
             rutesDeLesCategories()
             rutesDelsProductes()
+            rutesDelsProductesDUnaLlista()
         }
     }
 }

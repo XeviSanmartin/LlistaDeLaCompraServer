@@ -4,9 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Producte(
-    val id:Int,
+    val idProducte:Int,
     val nomProducte:String,
     val idCategoria:Int,
 
-)
+    )
 

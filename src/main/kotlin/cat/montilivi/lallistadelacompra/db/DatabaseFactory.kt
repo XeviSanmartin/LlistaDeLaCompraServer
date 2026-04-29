@@ -59,7 +59,7 @@ object DatabaseFactory {
                         it[nomusuari] = nomUsuari
                         it[password]  = EncriptadorDePasswords.hash(nomUsuari)
                         it[Usuaris.alias] = alias
-                    } get Usuaris.id
+                    } get Usuaris.idUsuari
                 }
                 logger.info("Seed: ${ids.size} usuaris inserits.")
 
@@ -92,9 +92,10 @@ object DatabaseFactory {
             }
 
             // PRODUCTES
+            var productes:List<Pair<String, Int>> = listOf()
             if (Productes.selectAll().empty()) {
                 // id de categoria: 1=Fruites, 2=Verdures, 3=Carns, 4=Peixos, 5=Lactis, 6=Begudes, 7=Cereals, 0=Altres
-                val productes = listOf(
+                productes = listOf(
                     "Poma"        to 2,
                     "Plàtan"      to 2,
                     "Taronja"     to 2,
@@ -123,16 +124,16 @@ object DatabaseFactory {
 
             // LLISTES DE LA COMPRA
             if (LlistesDeLaCompra.selectAll().empty()) {
-                val idJoan  = Usuaris.selectAll().where { Usuaris.nomusuari eq "joan"  }.first()[Usuaris.id]
-                val idMaria = Usuaris.selectAll().where { Usuaris.nomusuari eq "maria" }.first()[Usuaris.id]
+                val idJoan  = Usuaris.selectAll().where { Usuaris.nomusuari eq "joan"  }.first()[Usuaris.idUsuari]
+                val idMaria = Usuaris.selectAll().where { Usuaris.nomusuari eq "maria" }.first()[Usuaris.idUsuari]
 
                 val idLlista1 = LlistesDeLaCompra.insert {
                     it[nomLlista]    = "Compra setmanal Joan"
-                } get LlistesDeLaCompra.id
+                } get LlistesDeLaCompra.idLlista
 
                 val idLlista2 = LlistesDeLaCompra.insert {
                     it[nomLlista]    = "Festa d'aniversari"
-                } get LlistesDeLaCompra.id
+                } get LlistesDeLaCompra.idLlista
 
                 LlistesPropietaris.insert {
                     it[LlistesPropietaris.idLlista] = idLlista1
@@ -160,7 +161,7 @@ object DatabaseFactory {
                     ).forEach { (nom, qty, unit) ->
                         ProductesDeLaLlista.insert {
                             it[idLlista]    = idLlista1
-                            it[nomProducte] = nom
+                            it[idProducte] = productes.first() { p -> p.first == nom }.second
                             it[quantitat]   = qty
                             it[unitat]      = unit
                             it[estaComprat] = false
@@ -174,7 +175,7 @@ object DatabaseFactory {
                     ).forEach { (nom, qty, unit) ->
                         ProductesDeLaLlista.insert {
                             it[idLlista]    = idLlista2
-                            it[nomProducte] = nom
+                            it[idProducte] = productes.first() { p -> p.first == nom }.second
                             it[quantitat]   = qty
                             it[unitat]      = unit
                             it[estaComprat] = false
@@ -241,6 +242,7 @@ object DatabaseFactory {
             }
 
             // LLISTES DE LA COMPRA
+            val productes = RepositoriProductes.obtenTots().associateBy { it.nomProducte }
             if (RepositoriLlistesDeLaCompra.obtenTotes().isEmpty()) {
                 val joan  = RepositoriUsuaris.cercaUsuariPerNomUsuari("joan")
                 val maria = RepositoriUsuaris.cercaUsuariPerNomUsuari("maria")
@@ -260,7 +262,7 @@ object DatabaseFactory {
                                 Triple("Iogurt",   4, "unitats"),
                                 Triple("Tomàquet", 1, "kg"),
                             ).forEach { (nom, qty, unit) ->
-                                RepositoriProducteDeLaLlista.creaProducte(llista1.id, nom, qty, unit)
+                                RepositoriProducteDeLaLlista.creaProducte(llista1.id, productes[nom]?.idProducte!!, qty, unit)
                             }
                         }
                         if (llista2 != null) {
@@ -269,7 +271,7 @@ object DatabaseFactory {
                                 Triple("Arròs",          1, "kg"),
                                 Triple("Suc de taronja", 2, "ampolles"),
                             ).forEach { (nom, qty, unit) ->
-                                RepositoriProducteDeLaLlista.creaProducte(llista2.id, nom, qty, unit)
+                                RepositoriProducteDeLaLlista.creaProducte(llista2.id, productes[nom]?.idProducte!!, qty, unit)
                             }
                         }
                         logger.info("Seed: productes de les llistes inserits.")

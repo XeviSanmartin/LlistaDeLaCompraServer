@@ -21,9 +21,12 @@ object RepositoriProductes {
         }
         insertStatement.resultedValues?.singleOrNull()?.toProducte()
     }
-    
+    suspend fun existeixProductePerID(id:Int): Boolean = dbQuery {
+        Productes.selectAll().where { Productes.idProducte eq id }
+            .count() > 0
+    }
     suspend fun cercaProductePerId(id: Int): Producte? = dbQuery {
-        Productes.selectAll().where { Productes.id eq id }
+        Productes.selectAll().where { Productes.idProducte eq id }
             .map { it.toProducte() }
             .singleOrNull()
     }
@@ -45,13 +48,13 @@ object RepositoriProductes {
     
     // Versió amb camps individuals
     suspend fun actualitzaNomProducte(id: Int, nomProducte: String): Boolean = dbQuery {
-        Productes.update({ Productes.id eq id }) {
+        Productes.update({ Productes.idProducte eq id }) {
             it[Productes.nomProducte] = nomProducte
         } > 0
     }
     
     suspend fun actualitzaCategoriaProducte(id: Int, idCategoria: Int): Boolean = dbQuery {
-        Productes.update({ Productes.id eq id }) {
+        Productes.update({ Productes.idProducte eq id }) {
             it[Productes.idCategoria] = idCategoria
         } > 0
     }
@@ -68,7 +71,7 @@ object RepositoriProductes {
 
         if (!hiHaCanvis) return@dbQuery false
 
-        Productes.update({ Productes.id eq id }) {
+        Productes.update({ Productes.idProducte eq id }) {
             when (nomProducte) {
                 is CampActualitzable.NouValor -> it[Productes.nomProducte] = nomProducte.valor
                 CampActualitzable.SenseCanvi -> Unit
@@ -81,12 +84,12 @@ object RepositoriProductes {
     }
     
     suspend fun eliminaProducte(id: Int): Boolean = dbQuery {
-        Productes.deleteWhere { Productes.id eq id } > 0
+        Productes.deleteWhere { Productes.idProducte eq id } > 0
     }
     
     private fun ResultRow.toProducte(): Producte {
         return Producte(
-            id = this[Productes.id],
+            idProducte = this[Productes.idProducte],
             nomProducte = this[Productes.nomProducte],
             idCategoria = this[Productes.idCategoria]
         )

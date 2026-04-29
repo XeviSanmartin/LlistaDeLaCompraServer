@@ -17,7 +17,7 @@ object RepositoriProducteDeLaLlista {
     
     suspend fun creaProducte(
         idLlista: Int,
-        nomProducte: String,
+        idProducte: Int,
         quantitat: Int = 1,
         unitat: String = "unitats",
         estatComprat: Boolean = false,
@@ -25,7 +25,7 @@ object RepositoriProducteDeLaLlista {
     ): ProducteDeLaLlista? = dbQuery {
         val insertStatement = ProductesDeLaLlista.insert {
             it[ProductesDeLaLlista.idLlista] = idLlista
-            it[ProductesDeLaLlista.nomProducte] = nomProducte
+            it[ProductesDeLaLlista.idProducte] = idProducte
             it[ProductesDeLaLlista.quantitat] = quantitat
             it[ProductesDeLaLlista.unitat] = unitat
             it[ProductesDeLaLlista.estaComprat] = estatComprat
@@ -33,13 +33,18 @@ object RepositoriProducteDeLaLlista {
         }
         insertStatement.resultedValues?.singleOrNull()?.toProducteDeLaLlista()
     }
-    
-    suspend fun cercaProductePerId(id: Int): ProducteDeLaLlista? = dbQuery {
-        ProductesDeLaLlista.selectAll().where { ProductesDeLaLlista.id eq id }
+
+
+    suspend fun cercaProductePerId(idLlista: Int, idProducte: Int): ProducteDeLaLlista? = dbQuery {
+        ProductesDeLaLlista.selectAll().where { (ProductesDeLaLlista.idLlista eq idLlista) and (ProductesDeLaLlista.idProducte eq idProducte) }
             .map { it.toProducteDeLaLlista() }
             .singleOrNull()
     }
-    
+
+    suspend fun existeixProductePerId(idLlista:Int, idProducte:Int): Boolean = dbQuery {
+        ProductesDeLaLlista.selectAll().where { (ProductesDeLaLlista.idLlista eq idLlista) and (ProductesDeLaLlista.idProducte eq idProducte) }
+            .count() > 0
+    }
     suspend fun cercaProductesPerLlista(idLlista: Int): List<ProducteDeLaLlista> = dbQuery {
         ProductesDeLaLlista.selectAll().where { ProductesDeLaLlista.idLlista eq idLlista }
             .map { it.toProducteDeLaLlista() }
@@ -63,27 +68,21 @@ object RepositoriProducteDeLaLlista {
         ProductesDeLaLlista.selectAll().map { it.toProducteDeLaLlista() }
     }
     
-    // Versió amb camps individuals
-    suspend fun actualitzaNomProducte(id: Int, nomProducte: String): Boolean = dbQuery {
-        ProductesDeLaLlista.update({ ProductesDeLaLlista.id eq id }) {
-            it[ProductesDeLaLlista.nomProducte] = nomProducte
-        } > 0
-    }
-    
+
     suspend fun actualitzaQuantitat(id: Int, quantitat: Int): Boolean = dbQuery {
-        ProductesDeLaLlista.update({ ProductesDeLaLlista.id eq id }) {
+        ProductesDeLaLlista.update({ ProductesDeLaLlista.idProducte eq id }) {
             it[ProductesDeLaLlista.quantitat] = quantitat
         } > 0
     }
     
     suspend fun actualitzaUnitat(id: Int, unitat: String): Boolean = dbQuery {
-        ProductesDeLaLlista.update({ ProductesDeLaLlista.id eq id }) {
+        ProductesDeLaLlista.update({ ProductesDeLaLlista.idProducte eq id }) {
             it[ProductesDeLaLlista.unitat] = unitat
         } > 0
     }
     
     suspend fun actualitzaEstatComprat(id: Int, estatComprat: Boolean, quiHaComprat: Int = 0): Boolean = dbQuery {
-        ProductesDeLaLlista.update({ ProductesDeLaLlista.id eq id }) {
+        ProductesDeLaLlista.update({ ProductesDeLaLlista.idProducte eq id }) {
             it[ProductesDeLaLlista.estaComprat] = estatComprat
             it[ProductesDeLaLlista.quiHaComprat] = quiHaComprat
         } > 0
@@ -91,15 +90,14 @@ object RepositoriProducteDeLaLlista {
     
     // Versió amb paràmetres opcionals
     suspend fun actualitzaProducte(
-        id: Int,
-        nomProducte: CampActualitzable<String> = CampActualitzable.SenseCanvi,
+        idLlista: Int,
+        idProducte:Int,
         quantitat: CampActualitzable<Int> = CampActualitzable.SenseCanvi,
         unitat: CampActualitzable<String> = CampActualitzable.SenseCanvi,
         estatComprat: CampActualitzable<Boolean> = CampActualitzable.SenseCanvi,
         quiHaComprat: CampActualitzable<Int> = CampActualitzable.SenseCanvi
     ): Boolean = dbQuery {
         val hiHaCanvis =
-            nomProducte !is CampActualitzable.SenseCanvi ||
             quantitat !is CampActualitzable.SenseCanvi ||
             unitat !is CampActualitzable.SenseCanvi ||
             estatComprat !is CampActualitzable.SenseCanvi ||
@@ -107,11 +105,7 @@ object RepositoriProducteDeLaLlista {
 
         if (!hiHaCanvis) return@dbQuery false
 
-        ProductesDeLaLlista.update({ ProductesDeLaLlista.id eq id }) {
-            when (nomProducte) {
-                is CampActualitzable.NouValor -> it[ProductesDeLaLlista.nomProducte] = nomProducte.valor
-                CampActualitzable.SenseCanvi -> Unit
-            }
+        ProductesDeLaLlista.update({ (ProductesDeLaLlista.idLlista eq idLlista) and (ProductesDeLaLlista.idProducte eq idProducte) }) {
             when (quantitat) {
                 is CampActualitzable.NouValor -> it[ProductesDeLaLlista.quantitat] = quantitat.valor
                 CampActualitzable.SenseCanvi -> Unit
@@ -131,8 +125,8 @@ object RepositoriProducteDeLaLlista {
         } > 0
     }
     
-    suspend fun eliminaProducte(id: Int): Boolean = dbQuery {
-        ProductesDeLaLlista.deleteWhere { ProductesDeLaLlista.id eq id } > 0
+    suspend fun eliminaProducte(idLLista: Int, idProducte: Int): Boolean = dbQuery {
+        ProductesDeLaLlista.deleteWhere {(ProductesDeLaLlista.idLlista eq idLlista) and (ProductesDeLaLlista.idProducte eq idProducte)} > 0
     }
     
     suspend fun eliminaProductesPerLlista(idLlista: Int): Boolean = dbQuery {
@@ -141,12 +135,11 @@ object RepositoriProducteDeLaLlista {
     
     private fun ResultRow.toProducteDeLaLlista(): ProducteDeLaLlista {
         return ProducteDeLaLlista(
-            id = this[ProductesDeLaLlista.id],
+            idProducte = this[ProductesDeLaLlista.idProducte],
             idLLista = this[ProductesDeLaLlista.idLlista],
-            nomProducte = this[ProductesDeLaLlista.nomProducte],
-            quenatitat = this[ProductesDeLaLlista.quantitat],
+            quantitat = this[ProductesDeLaLlista.quantitat],
             unitat = this[ProductesDeLaLlista.unitat],
-            estatComprat = this[ProductesDeLaLlista.estaComprat],
+            estaComprat = this[ProductesDeLaLlista.estaComprat],
             quiHaComprat = this[ProductesDeLaLlista.quiHaComprat] ?: 0
         )
     }

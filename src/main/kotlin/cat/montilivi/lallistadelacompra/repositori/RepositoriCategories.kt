@@ -22,7 +22,7 @@ object RepositoriCategories {
     }
     
     suspend fun cercaCategoriaPerId(id: Int): Categoria? = dbQuery {
-        Categories.selectAll().where { Categories.id eq id }
+        Categories.selectAll().where { Categories.idCategoria eq id }
             .map { it.toCategoria() }
             .singleOrNull()
     }
@@ -39,7 +39,7 @@ object RepositoriCategories {
     
     // Versió amb camp individual
     suspend fun actualitzaNomCategoria(id: Int, nomCategoria: String): Boolean = dbQuery {
-        Categories.update({ Categories.id eq id }) {
+        Categories.update({ Categories.idCategoria eq id }) {
             it[Categories.nomCategoria] = nomCategoria
         } > 0
     }
@@ -51,7 +51,7 @@ object RepositoriCategories {
     ): Boolean = dbQuery {
         if (nomCategoria !is CampActualitzable.NouValor) return@dbQuery false
         
-        Categories.update({ Categories.id eq id }) {
+        Categories.update({ Categories.idCategoria eq id }) {
             when (nomCategoria) {
                 is CampActualitzable.NouValor -> it[Categories.nomCategoria] = nomCategoria.valor
                 CampActualitzable.SenseCanvi -> Unit
@@ -60,12 +60,12 @@ object RepositoriCategories {
     }
     
     suspend fun eliminaCategoria(id: Int): Boolean = dbQuery {
-        Categories.deleteWhere { Categories.id eq id } > 0
+        Categories.deleteWhere { Categories.idCategoria eq id } > 0
     }
     
     private fun ResultRow.toCategoria(): Categoria {
         return Categoria(
-            id = this[Categories.id],
+            id = this[Categories.idCategoria],
             nomCategoria = this[Categories.nomCategoria]
         )
     }

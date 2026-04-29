@@ -27,7 +27,7 @@ object RepositoriLlistesDeLaCompra {
             it[LlistesDeLaCompra.nomLlista] = nomLlista
         }
         val fila = insertStatement.resultedValues?.singleOrNull() ?: return@dbQuery null
-        val idLlista = fila[LlistesDeLaCompra.id]
+        val idLlista = fila[LlistesDeLaCompra.idLlista]
         val propietaris = idsPropietaris.distinct()
         propietaris.forEach { idUsuari ->
             LlistesPropietaris.insert {
@@ -48,7 +48,7 @@ object RepositoriLlistesDeLaCompra {
     }
 
     suspend fun cercaLlistaPerId(id: Int): LlistaDeLaCompra? = dbQuery {
-        LlistesDeLaCompra.selectAll().where { LlistesDeLaCompra.id eq id }
+        LlistesDeLaCompra.selectAll().where { LlistesDeLaCompra.idLlista eq id }
             .map { it.toLlistaDeLaCompra() }
             .singleOrNull()
     }
@@ -77,7 +77,7 @@ object RepositoriLlistesDeLaCompra {
         ).any()
         if (teAcces)
         {
-            LlistesDeLaCompra.update({ (LlistesDeLaCompra.id eq idLlista) }) {
+            LlistesDeLaCompra.update({ (LlistesDeLaCompra.idLlista eq idLlista) }) {
                 it[LlistesDeLaCompra.nomLlista] = nomLlista
             } > 0
         }
@@ -95,7 +95,7 @@ object RepositoriLlistesDeLaCompra {
 
         if (!hiHaCanvis) return@dbQuery false
 
-        val nomActualitzat = LlistesDeLaCompra.update({ LlistesDeLaCompra.id eq id }) {
+        val nomActualitzat = LlistesDeLaCompra.update({ LlistesDeLaCompra.idLlista eq id }) {
             when (nomLlista) {
                 is CampActualitzable.NouValor -> it[LlistesDeLaCompra.nomLlista] = nomLlista.valor
                 CampActualitzable.SenseCanvi -> Unit
@@ -112,16 +112,23 @@ object RepositoriLlistesDeLaCompra {
         if (teAcces) {
             LlistesPropietaris.deleteWhere { LlistesPropietaris.idLlista eq idLlista }
             ProductesDeLaLlista.deleteWhere { ProductesDeLaLlista.idLlista eq idLlista }
-            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.id eq idLlista } > 0
+            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.idLlista eq idLlista } > 0
         }
         else
             false
     }
 
+    suspend fun existeixLlista(idLlista: Int): Boolean = dbQuery {
+        LlistesDeLaCompra.selectAll().where { LlistesDeLaCompra.idLlista eq idLlista }
+            .any()
+    }
+
+
+
     suspend fun afegeixPropietariDeLlista(idUsuari: Int, idLlista: Int): Boolean = dbQuery {
         // Comprovem si la llista existeix
         val llistaExisteix = LlistesDeLaCompra
-            .selectAll().where { LlistesDeLaCompra.id eq idLlista }
+            .selectAll().where { LlistesDeLaCompra.idLlista eq idLlista }
             .any()
 
         if (!llistaExisteix) return@dbQuery false
@@ -152,7 +159,7 @@ object RepositoriLlistesDeLaCompra {
                 (LlistesPropietaris.idUsuari eq idUsuari) and (LlistesPropietaris.idLlista eq idLlista)
             }
             // Finalment eliminem la llista
-            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.id eq idLlista }>0
+            LlistesDeLaCompra.deleteWhere { LlistesDeLaCompra.idLlista eq idLlista }>0
         } else {
             // Eliminem el vincle entre l'usuari i la llista
             LlistesPropietaris.deleteWhere {
@@ -161,16 +168,23 @@ object RepositoriLlistesDeLaCompra {
         }
     }
 
-    private fun ResultRow.toLlistaDeLaCompra(): LlistaDeLaCompra {
-        val idLlista = this[LlistesDeLaCompra.id]
-        val idsPropietaris = LlistesPropietaris.selectAll()
-            .where { LlistesPropietaris.idLlista eq idLlista }
-            .map { it[LlistesPropietaris.idUsuari] }
-
+    private suspend fun ResultRow.toLlistaDeLaCompra(): LlistaDeLaCompra {
+        val idLlista = this[LlistesDeLaCompra.idLlista]
+        val idsPropietaris = dbQuery {
+            LlistesPropietaris.selectAll()
+                .where { LlistesPropietaris.idLlista eq idLlista }
+                .map { it[LlistesPropietaris.idUsuari] }
+        }
+        val idsProductes = dbQuery {
+            ProductesDeLaLlista.selectAll()
+                .where { ProductesDeLaLlista.idLlista eq idLlista }
+                .map { it[ProductesDeLaLlista.idProducte] }
+        }
         return LlistaDeLaCompra(
             id = idLlista,
             nomLlista = this[LlistesDeLaCompra.nomLlista],
-            idsPropietaris = idsPropietaris
+            idsPropietaris = idsPropietaris,
+            idsProductes = idsProductes,
         )
     }
 }

@@ -33,7 +33,7 @@ object RepositoriUsuaris {
 
 
     suspend fun cercaUsuariPerId(id: Int): Usuari? = dbQuery {
-        Usuaris.selectAll().where { Usuaris.id eq id }
+        Usuaris.selectAll().where { Usuaris.idUsuari eq id }
             .map { it.toUsuari() }
             .singleOrNull()
     }
@@ -69,19 +69,19 @@ object RepositoriUsuaris {
     }
 
     suspend fun actualitzaAliasUsuari(id: Int, aliasUsuari: String?): Boolean = dbQuery {
-        Usuaris.update({ Usuaris.id eq id }) {
+        Usuaris.update({ Usuaris.idUsuari eq id }) {
             it[alias] = aliasUsuari
         } > 0
     }
 
     suspend fun actualitzaPasswordUsuari(id: Int, passwordUsuari: String): Boolean = dbQuery {
-        Usuaris.update({ Usuaris.id eq id }) {
+        Usuaris.update({ Usuaris.idUsuari eq id }) {
             it[password] = passwordUsuari
         } > 0
     }
 
     suspend fun actualitzaNomUsuari(id: Int, nomUsuari: String): Boolean = dbQuery {
-        Usuaris.update({ Usuaris.id eq id }) {
+        Usuaris.update({ Usuaris.idUsuari eq id }) {
             it[nomusuari] = nomUsuari
         } > 0
     }
@@ -99,7 +99,7 @@ object RepositoriUsuaris {
 
         if (!hiHaCanvis) return@dbQuery false
 
-        Usuaris.update({ Usuaris.id eq id }) {
+        Usuaris.update({ Usuaris.idUsuari eq id }) {
             when (aliasUsuari) {
                 is CampActualitzable.NouValor -> it[alias] = aliasUsuari.valor
                 CampActualitzable.SenseCanvi -> Unit
@@ -127,7 +127,7 @@ object RepositoriUsuaris {
 
         //Mirem que existeixin tant l'usuari propi com l'amic a la taula d'usuaris
         val usuarisExistents = Usuaris.selectAll()
-            .where { (Usuaris.id eq idUsuari) or (Usuaris.id eq idAmic) }
+            .where { (Usuaris.idUsuari eq idUsuari) or (Usuaris.idUsuari eq idAmic) }
             .count()
 
         if (usuarisExistents < 2L) return@dbQuery false
@@ -166,7 +166,7 @@ object RepositoriUsuaris {
 
         //Mirem que existeixin tant l'usuari propi com l'amic a la taula d'usuaris
         val usuarisExistents = Usuaris.selectAll()
-            .where { (Usuaris.id eq idUsuari) or (Usuaris.id eq idAmic) }
+            .where { (Usuaris.idUsuari eq idUsuari) or (Usuaris.idUsuari eq idAmic) }
             .count()
 
         if (usuarisExistents < 2L) return@dbQuery false
@@ -191,7 +191,7 @@ object RepositoriUsuaris {
         // Hem d'especificar amb quin camp fem join, perquè els dos camps
         // d'UsuarisAmics fan referència a Usuaris.id
         UsuarisAmics
-            .innerJoin(Usuaris, { idAmic }, { Usuaris.id }) // Aquí especifiquem: AmicID -> UsuariID
+            .innerJoin(Usuaris, { idAmic }, { Usuaris.idUsuari }) // Aquí especifiquem: AmicID -> UsuariID
             .selectAll().where{ UsuarisAmics.idUsuari eq idUsuari }
             .map{it.toUsuari()}
     }
@@ -205,22 +205,30 @@ object RepositoriUsuaris {
             .where { LlistesPropietaris.idUsuari eq idUsuari }
             .map { RepositoriLlistesDeLaCompra.eliminaPropietariDeLlista(idUsuari, it[idLlista]) }
         UsuarisAmics.deleteWhere { (UsuarisAmics.idUsuari eq idUsuari) or (UsuarisAmics.idAmic eq idUsuari)}
-        Usuaris.deleteWhere { Usuaris.id eq idUsuari } > 0
+        Usuaris.deleteWhere { Usuaris.idUsuari eq idUsuari } > 0
     }
 
-    private fun ResultRow.toUsuari(): Usuari {
-        val idUsuari = this[Usuaris.id]
-        val idsLlistesVisibles = LlistesPropietaris
-            .selectAll()
-            .where { LlistesPropietaris.idUsuari eq idUsuari }
-            .map { it[LlistesPropietaris.idLlista] }
-
+    private suspend fun ResultRow.toUsuari(): Usuari {
+        val idUsuari = this[Usuaris.idUsuari]
+        val idsLlistesVisibles = dbQuery {
+            LlistesPropietaris
+                .selectAll()
+                .where { LlistesPropietaris.idUsuari eq idUsuari }
+                .map { it[LlistesPropietaris.idLlista] }
+        }
+        val idsAmics = dbQuery {
+            UsuarisAmics
+                .selectAll()
+                .where { UsuarisAmics.idUsuari eq idUsuari }
+                .map{it[UsuarisAmics.idUsuari]}
+        }
         return Usuari(
             id = idUsuari,
             alias = this[Usuaris.alias],
             nomUsuari = this[Usuaris.nomusuari],
             password = this[Usuaris.password],
-            idsLlistesVisibles = idsLlistesVisibles
+            idsLlistesVisibles = idsLlistesVisibles,
+            idsAmics = idsAmics
         )
     }
 }
