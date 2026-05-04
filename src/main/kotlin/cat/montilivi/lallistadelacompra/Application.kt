@@ -5,6 +5,7 @@ import cat.montilivi.lallistadelacompra.plugins.configureSerialization
 import cat.montilivi.lallistadelacompra.db.DatabaseFactory
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig
 import cat.montilivi.lallistadelacompra.plugins.configureSecurity
+import cat.montilivi.lallistadelacompra.plugins.configureSockets
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.server.application.*
 import io.ktor.server.cio.EngineMain
@@ -20,5 +21,6 @@ fun Application.module() {
     JwtConfig.inicialitza(environment.config)
     configureSecurity(RepositoriUsuaris)
     configureSerialization()
+    configureSockets()
     configureRouting(RepositoriUsuaris)
 }

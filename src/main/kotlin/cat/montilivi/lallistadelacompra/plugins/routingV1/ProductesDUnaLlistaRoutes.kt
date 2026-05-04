@@ -1,10 +1,11 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
+import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.PeticioActualitzacioProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.PeticioLlista
 import cat.montilivi.lallistadelacompra.model.PeticioProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.ProducteDeLaLlista
+import cat.montilivi.lallistadelacompra.model.TipusAccio
 import cat.montilivi.lallistadelacompra.model.toCampActualitzable
+import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista
 import io.ktor.http.HttpStatusCode
@@ -16,10 +17,8 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
-import io.ktor.server.routing.path
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import kotlin.collections.mapOf
 
 
 fun Route.rutesDelsProductesDUnaLlista() {
@@ -62,16 +61,29 @@ fun Route.rutesDelsProductesDUnaLlista() {
                                 idLlista,
                                 idProducte = request.idProducte
                             )) {
-                            val idProducteDeLaLlista = RepositoriProducteDeLaLlista.creaProducte(
+                            val producteNou = RepositoriProducteDeLaLlista.creaProducte(
                                 idLlista,
                                 request.idProducte,
-                                request.quantitat ?: 1,
-                                request.unitat ?: "unitats",
-                                request.estaComprat ?: false,
-                                request.quiHaComprat ?: 0
+                                request.quantitat ,
+                                request.unitat,
+                                request.estaComprat,
+                                request.quiHaComprat
                             )
-                            if (idProducteDeLaLlista!= null)
-                                call.respond(HttpStatusCode.Created, "Producte afegit a la llista amb ID: ${idProducteDeLaLlista?.idProducte}")
+                            if (producteNou!= null)
+                            {
+//                                // --- CODI WEBSOCKET ---
+//                                // Busquem qui ha de saber-ho
+//                                val idsAVisualitzar = RepositoriLlistesDeLaCompra.obtenIdsPropietaris(producteNou.idLLista)
+//
+//                                // Enviem l'esdeveniment
+//                                GestorDeConnexions.enviaAUsuarisConcrets(
+//                                    idsAVisualitzar,
+//                                    EsdevenimentLlista(TipusAccio.PRODUCTE_AFEGIT, producteNou.idLLista, producteNou.idProducte, producteNou)
+//                                )
+//                                // ----------------------
+                                GestorDeConnexions.notificaAccio(TipusAccio.PRODUCTE_AFEGIT, producteNou.idLLista, producteNou.idProducte, producteNou)
+                                call.respond(HttpStatusCode.Created, "Producte afegit a la llista amb ID: ${producteNou.idProducte}")
+                            }
                             else
                                 call.respond(HttpStatusCode.InternalServerError, "No s'ha pogut crear el producte")
                         } else {
@@ -108,8 +120,21 @@ fun Route.rutesDelsProductesDUnaLlista() {
                                 request.estaComprat.toCampActualitzable(),
                                 request.quiHaComprat.toCampActualitzable()
                             )
-                            if (resultat)
+                            if (resultat) {
+                                // --- CODI WEBSOCKET ---
+                                // Busquem qui ha de saber-ho
+                                val producteActualitzat = RepositoriProducteDeLaLlista.cercaProductePerId(idLlista, idProducte)
+                                require(producteActualitzat != null)
+                                val idsAVisualitzar = RepositoriLlistesDeLaCompra.obtenIdsPropietaris(producteActualitzat.idLLista)
+
+                                // Enviem l'esdeveniment
+                                GestorDeConnexions.enviaAUsuarisConcrets(
+                                    idsAVisualitzar,
+                                    EsdevenimentLlista(TipusAccio.PRODUCTE_ACTUALITZAT, producteActualitzat.idLLista, producteActualitzat.idProducte, producteActualitzat)
+                                )
+                                // ----------------------
                                 call.respond(HttpStatusCode.OK, "Producte actualitzat correctament")
+                            }
                             else
                                 call.respond(HttpStatusCode.InternalServerError, "No s'ha pogut actualitzar el producte")
                         } else {
@@ -142,8 +167,20 @@ fun Route.rutesDelsProductesDUnaLlista() {
                                 idLlista,
                                 idProducte
                             )
-                            if(resultat)
+                            if(resultat) {
+//                                // --- CODI WEBSOCKET ---
+//                                // Busquem qui ha de saber-ho
+//                                val idsAVisualitzar = RepositoriLlistesDeLaCompra.obtenIdsPropietaris(idLlista)
+//
+//                                // Enviem l'esdeveniment
+//                                GestorDeConnexions.enviaAUsuarisConcrets(
+//                                    idsAVisualitzar,
+//                                    EsdevenimentLlista(TipusAccio.PRODUCTE_ELIMINAT, idLlista, idProducte, null)
+//                                )
+//                                // ----------------------
+                                GestorDeConnexions.notificaAccio(TipusAccio.PRODUCTE_ELIMINAT, idLlista, idProducte, null)
                                 call.respond(HttpStatusCode.OK, "El producte s'ha eliminat correctament")
+                            }
                             else
                                 call.respond(HttpStatusCode.InternalServerError, "No s'ha pogut eliminar el producte")
                         } else {

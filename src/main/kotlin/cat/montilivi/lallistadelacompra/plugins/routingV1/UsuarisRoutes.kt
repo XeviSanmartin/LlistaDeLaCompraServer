@@ -1,10 +1,13 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
+import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.PeticioActualitzacioUsuari
 import cat.montilivi.lallistadelacompra.model.PeticioRegistre
 import cat.montilivi.lallistadelacompra.model.SessioUsuari
+import cat.montilivi.lallistadelacompra.model.TipusAccio
 import cat.montilivi.lallistadelacompra.model.toCampActualitzable
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
+import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -117,7 +120,19 @@ fun Route.rutesDelsUsuaris() {
                     call.parameters["idAmic"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest)
 
                 val exit = RepositoriUsuaris.afegeixAmic(idUsuari, idAmic)
-                if (exit) call.respond(HttpStatusCode.Created, "Amic afegit")
+                if (exit) {
+                    // --- CODI WEBSOCKET ---
+                    // Busquem qui ha de saber-ho
+                    val idsAVisualitzar = listOf<Int>(idAmic)
+
+                    // Enviem l'esdeveniment
+                    GestorDeConnexions.enviaAUsuarisConcrets(
+                        idsAVisualitzar,
+                        EsdevenimentLlista(TipusAccio.NOTIFICACIÓ_AMISTAT_NOVA, 0, idUsuari, null)
+                    )
+                    // ----------------------
+                    call.respond(HttpStatusCode.Created, "Amic afegit")
+                }
                 else call.respond(HttpStatusCode.BadRequest, "No s'ha pogut afegir l'amic")
             }
 
@@ -129,7 +144,19 @@ fun Route.rutesDelsUsuaris() {
                     ?: return@delete call.respond(HttpStatusCode.BadRequest)
 
                 val exit = RepositoriUsuaris.eliminaAmic(idUsuari, idAmic)
-                if (exit) call.respond(HttpStatusCode.OK, "Amic eliminat")
+                if (exit) {
+                    // --- CODI WEBSOCKET ---
+                    // Busquem qui ha de saber-ho
+                    val idsAVisualitzar = listOf<Int>(idAmic)
+
+                    // Enviem l'esdeveniment
+                    GestorDeConnexions.enviaAUsuarisConcrets(
+                        idsAVisualitzar,
+                        EsdevenimentLlista(TipusAccio.NOTIFICACIÓ_AMISTAT_ELIMINADA, 0, idUsuari, null)
+                    )
+                    // ----------------------
+                    call.respond(HttpStatusCode.OK, "Amic eliminat")
+                }
                 else call.respond(HttpStatusCode.NotFound)
             }
         }

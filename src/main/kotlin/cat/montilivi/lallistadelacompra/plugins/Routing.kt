@@ -6,6 +6,7 @@ import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesCategories
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductes
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductesDUnaLlista
+import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsSockets
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsUsuaris
 import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
@@ -180,7 +181,9 @@ private fun Routing.rutesV1() {
             rutesDeLesCategories()
             rutesDelsProductes()
             rutesDelsProductesDUnaLlista()
+            rutesDelsSockets()
         }
+
     }
 }
 

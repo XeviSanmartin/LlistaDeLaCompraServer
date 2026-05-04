@@ -2,6 +2,7 @@ package cat.montilivi.lallistadelacompra.plugins.routingV1
 
 import cat.montilivi.lallistadelacompra.model.PeticioProducte
 import cat.montilivi.lallistadelacompra.model.toCampActualitzable
+import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProductes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -38,8 +39,8 @@ fun Route.rutesDelsProductes() {
                 }
                 else {
                     try {
-                        val idProducte = RepositoriProductes.creaProducte(peticio.nom, peticio.idCategoria)
-                        call.respond(HttpStatusCode.Created, mapOf("idProducte" to idProducte))
+                        val producte = RepositoriProductes.creaProducte(peticio.nom, peticio.idCategoria)
+                       call.respond(HttpStatusCode.Created, mapOf("idProducte" to producte?.idProducte))
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.Conflict, "Aquest producte ja existeix")
                     }

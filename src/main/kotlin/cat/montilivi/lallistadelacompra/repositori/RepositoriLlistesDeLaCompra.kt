@@ -168,6 +168,12 @@ object RepositoriLlistesDeLaCompra {
         }
     }
 
+    suspend fun obtenIdsPropietaris(idLlista: Int): List<Int> = dbQuery {
+        LlistesPropietaris
+            .selectAll().where { LlistesPropietaris.idLlista eq idLlista }
+            .map { it[LlistesPropietaris.idUsuari] }
+    }
+
     private suspend fun ResultRow.toLlistaDeLaCompra(): LlistaDeLaCompra {
         val idLlista = this[LlistesDeLaCompra.idLlista]
         val idsPropietaris = dbQuery {

@@ -1,7 +1,11 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
+import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.PeticioLlista
+import cat.montilivi.lallistadelacompra.model.TipusAccio
+import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
+import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -54,6 +58,16 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
             val exit = RepositoriLlistesDeLaCompra.actualitzaNomLlista(llistaId, request.nom, idUsuari)
 
             if (exit) {
+                // --- CODI WEBSOCKET ---
+                // Busquem qui ha de saber-ho
+                val idsAVisualitzar = RepositoriLlistesDeLaCompra.obtenIdsPropietaris(llistaId)
+
+                // Enviem l'esdeveniment
+                GestorDeConnexions.enviaAUsuarisConcrets(
+                    idsAVisualitzar,
+                    EsdevenimentLlista(TipusAccio.LLISTA_ACTUALITZADA, llistaId, null, null)
+                )
+                // ----------------------
                 call.respond(HttpStatusCode.OK, mapOf("status" to "Llista actualitzada"))
             } else {
                 call.respond(HttpStatusCode.NotFound, "Llista no trobada o no tens permís")

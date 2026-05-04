@@ -47,6 +47,9 @@ dependencies {
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-server-auth-jwt")
 
+    //WebSockets
+    implementation("io.ktor:ktor-server-websockets:3.4.1")
+
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.xerial:sqlite-jdbc:${sqlite_jdbc_version}")
