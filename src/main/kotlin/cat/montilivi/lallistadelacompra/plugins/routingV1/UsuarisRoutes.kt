@@ -1,10 +1,10 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.websockets.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.requests.PeticioActualitzacioUsuari
 import cat.montilivi.lallistadelacompra.model.requests.PeticioRegistre
 import cat.montilivi.lallistadelacompra.model.autentificacio.SessioUsuari
-import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.websockets.TipusAccio
 import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
@@ -22,6 +22,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.routing.openapi.describe
 import io.ktor.server.sessions.sessions
 import io.ktor.server.sessions.set
 
@@ -29,19 +30,17 @@ fun Route.rutesDelsUsuaris() {
 
     // Rutes públiques
     post("login") {
+        // Accepta form data: username= i password=
         val parametres = call.receiveParameters()
-        val usuari = parametres["username"] // En aquest moment estic decidint com cal que es diguin els paràmetres
-        val motDePas = parametres["password"]  // que m'han de passar per iniciar sessió
+        val username = parametres["username"] ?: ""
+        val password = parametres["password"] ?: ""
 
         // 1. Validem amb el UserRepository + BCrypt
-        val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(usuari ?: "", motDePas ?: "")
+        val usuariDB = RepositoriUsuaris.cercaUsuariPerCredencials(username, password)
 
         if (usuariDB != null) {
             // 2. CREEM la sessió (Ktor enviarà la Cookie automàticament)
             call.sessions.set(SessioUsuari(idUsuari = usuariDB.id, nomUsuari = usuariDB.nomUsuari))
-            //Deactivem aquesta resposta, perquè tan sols es pot contestar una vegada i non ens
-            //deixaria enviar el token. Afego, el missatge amb el token
-            //call.respondText("Login correcte!")
 
             // 3. Generem el token
             val token = generaToken(usuariDB.id)
@@ -49,6 +48,10 @@ fun Route.rutesDelsUsuaris() {
         } else {
             call.respond(HttpStatusCode.Unauthorized, "Credencials invàlides")
         }
+    }.describe {
+        summary = "Inicia sessió"
+        description = "Rep username i password com a form data (application/x-www-form-urlencoded) i retorna un token JWT. Copia el token i clica 'Authorize' a la part superior per usar els endpoints protegits."
+        tag("Autenticació")
     }
     post("registre") {
         //region Versió sense status page
@@ -65,9 +68,16 @@ fun Route.rutesDelsUsuaris() {
         // Si l'usuari existeix es llançarà una SQLException.
         call.respond(HttpStatusCode.Created, mapOf("id" to id))
     }
+
     // Aquesta ruta és només per a testing, no l'hauria de tenir en producció
-    get("usuaris"){
-        call.respond(RepositoriUsuaris.obtenTots())
+    route("usuaris") {
+        get {
+            call.respond(RepositoriUsuaris.obtenTots())
+        }
+    }.describe {
+        summary = "Llista tots els usuaris (només per a testing)"
+        description = "No hauria d'estar disponible en producció"
+        tag("Usuaris")
     }
 
     // Rutes protegides (requereixen Token)
@@ -78,17 +88,18 @@ fun Route.rutesDelsUsuaris() {
             get {
                 val idUsuari = call.principal<JWTPrincipal>()?.payload?.getClaim("idUsuari")?.asInt()
                     ?: return@get call.respond(HttpStatusCode.Unauthorized)
-
                 val usuari = RepositoriUsuaris.cercaUsuariPerId(idUsuari)
                 if (usuari != null) call.respond(usuari)
                 else call.respond(HttpStatusCode.NotFound)
+            }.describe {
+                summary = "Obté el meu perfil"
+                tag("Usuaris")
             }
 
             // Actualitza el meu perfil
             patch {
                 val idUsuari = call.principal<JWTPrincipal>()?.payload?.getClaim("idUsuari")?.asInt()
                     ?: return@patch call.respond(HttpStatusCode.Unauthorized)
-
                 val peticio = call.receive<PeticioActualitzacioUsuari>()
                 val exit = RepositoriUsuaris.actualitzaUsuari(
                     idUsuari,
@@ -96,18 +107,26 @@ fun Route.rutesDelsUsuaris() {
                     peticio.motDePas.toCampActualitzable(),
                     peticio.alias.toCampActualitzable()
                 )
-
                 if (exit) call.respond(HttpStatusCode.OK, "Perfil actualitzat")
                 else call.respond(HttpStatusCode.BadRequest)
+            }.describe {
+                summary = "Actualitza el meu perfil"
+                description = "Permet modificar nomUsuari, motDePas i/o alias. Tots els camps són opcionals"
+                tag("Usuaris")
             }
+
             delete {
                 val idUsuari = call.principal<JWTPrincipal>()?.payload?.getClaim("idUsuari")?.asInt()
                     ?: return@delete call.respond(HttpStatusCode.Unauthorized)
                 val exit = RepositoriUsuaris.eliminaUsuari(idUsuari)
                 if (exit) call.respond(HttpStatusCode.OK, "Usuari eliminat")
                 else call.respond(HttpStatusCode.BadRequest)
+            }.describe {
+                summary = "Elimina el meu compte"
+                tag("Usuaris")
             }
         }
+
         route("me/amics") {
 
             // GET: Llistar els meus amics
@@ -116,30 +135,29 @@ fun Route.rutesDelsUsuaris() {
                     ?: return@get call.respond(HttpStatusCode.Unauthorized)
                 val amics = RepositoriUsuaris.obtenAmics(idUsuari)
                 call.respond(amics)
+            }.describe {
+                summary = "Llista els meus amics"
+                tag("Usuaris")
             }
 
-            // POST: Afegir un amic (per ID o podríem fer-ho per username)
+            // POST: Afegir un amic (per ID)
             post("{idAmic}") {
                 val idUsuari = call.principal<JWTPrincipal>()?.payload?.getClaim("idUsuari")?.asInt()
                     ?: return@post call.respond(HttpStatusCode.Unauthorized)
                 val idAmic =
                     call.parameters["idAmic"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest)
-
                 val exit = RepositoriUsuaris.afegeixAmic(idUsuari, idAmic)
                 if (exit) {
-                    // --- CODI WEBSOCKET ---
-                    // Busquem qui ha de saber-ho
                     val idsAVisualitzar = listOf<Int>(idAmic)
-
-                    // Enviem l'esdeveniment
                     GestorDeConnexions.enviaAUsuarisConcrets(
                         idsAVisualitzar,
                         EsdevenimentLlista(TipusAccio.NOTIFICACIÓ_AMISTAT_NOVA, 0, idUsuari, null)
                     )
-                    // ----------------------
                     call.respond(HttpStatusCode.Created, "Amic afegit")
-                }
-                else call.respond(HttpStatusCode.BadRequest, "No s'ha pogut afegir l'amic")
+                } else call.respond(HttpStatusCode.BadRequest, "No s'ha pogut afegir l'amic")
+            }.describe {
+                summary = "Afegeix un amic per ID"
+                tag("Usuaris")
             }
 
             // DELETE: Treure un amic
@@ -148,22 +166,18 @@ fun Route.rutesDelsUsuaris() {
                     ?: return@delete call.respond(HttpStatusCode.Unauthorized)
                 val idAmic = call.parameters["idAmic"]?.toIntOrNull()
                     ?: return@delete call.respond(HttpStatusCode.BadRequest)
-
                 val exit = RepositoriUsuaris.eliminaAmic(idUsuari, idAmic)
                 if (exit) {
-                    // --- CODI WEBSOCKET ---
-                    // Busquem qui ha de saber-ho
                     val idsAVisualitzar = listOf<Int>(idAmic)
-
-                    // Enviem l'esdeveniment
                     GestorDeConnexions.enviaAUsuarisConcrets(
                         idsAVisualitzar,
                         EsdevenimentLlista(TipusAccio.NOTIFICACIÓ_AMISTAT_ELIMINADA, 0, idUsuari, null)
                     )
-                    // ----------------------
                     call.respond(HttpStatusCode.OK, "Amic eliminat")
-                }
-                else call.respond(HttpStatusCode.NotFound)
+                } else call.respond(HttpStatusCode.NotFound)
+            }.describe {
+                summary = "Elimina un amic per ID"
+                tag("Usuaris")
             }
         }
     }

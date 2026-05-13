@@ -12,6 +12,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.routing.openapi.describe
 
 fun Route.rutesDelsProductes() {
         route("productes") {
@@ -25,6 +26,10 @@ fun Route.rutesDelsProductes() {
                     RepositoriProductes.obtenTots()
                 }
                 call.respond(llista)
+            }.describe {
+                summary = "Llista tots els productes"
+                description = "Retorna tots els productes. Opcionalment filtra per ?idCategoria=N"
+                tag("Productes")
             }
 
             // POST: Afegir un producte nou al catàleg
@@ -44,6 +49,10 @@ fun Route.rutesDelsProductes() {
                         call.respond(HttpStatusCode.Conflict, "Aquest producte ja existeix")
                     }
                 }
+            }.describe {
+                summary = "Afegeix un producte nou al catàleg"
+                description = "Requereix nom i idCategoria. Retorna 409 si el producte ja existeix"
+                tag("Productes")
             }
 
             // PATCH: Modificar un producte
@@ -54,6 +63,10 @@ fun Route.rutesDelsProductes() {
                 var argIdCategoria= peticio.idCategoria.toCampActualitzable()
                 val exit = RepositoriProductes.actualitzaProducte(idProducte, argNom, argIdCategoria)
                 if (exit) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.NotFound)
+            }.describe {
+                summary = "Modifica un producte"
+                description = "Els camps nom i idCategoria són opcionals"
+                tag("Productes")
             }
 
             // DELETE: Esborrar un producte
@@ -61,6 +74,9 @@ fun Route.rutesDelsProductes() {
                 val idProducte = call.parameters["idProducte"]?.toIntOrNull() ?: return@delete call.respond(HttpStatusCode.BadRequest)
                 val exit = RepositoriProductes.eliminaProducte(idProducte)
                 if (exit) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.NotFound)
+            }.describe {
+                summary = "Esborra un producte del catàleg"
+                tag("Productes")
             }
         }
 }

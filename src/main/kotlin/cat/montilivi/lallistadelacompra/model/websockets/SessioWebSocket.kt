@@ -1,4 +1,4 @@
-package cat.montilivi.lallistadelacompra.model.websockects
+package cat.montilivi.lallistadelacompra.model.websockets
 
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 

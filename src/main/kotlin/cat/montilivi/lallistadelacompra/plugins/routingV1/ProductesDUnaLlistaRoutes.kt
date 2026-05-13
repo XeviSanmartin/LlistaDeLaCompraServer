@@ -1,9 +1,9 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.websockets.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.requests.PeticioActualitzacioProducteDeLaLlista
 import cat.montilivi.lallistadelacompra.model.requests.PeticioProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.websockets.TipusAccio
 import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
@@ -19,6 +19,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.routing.openapi.describe
 
 
 fun Route.rutesDelsProductesDUnaLlista() {
@@ -44,10 +45,13 @@ fun Route.rutesDelsProductesDUnaLlista() {
                     call.respond(HttpStatusCode.NotFound, "Llista no trobada")
                 }
             }
+        }.describe {
+            summary = "Llista els productes d'una llista"
+            description = "Només accessible per als propietaris de la llista"
+            tag("Productes d'una llista")
         }
 
-        post ()
-        {
+        post {
             val idLlista = call.parameters["idLlista"]?.toIntOrNull()
             val principal = call.principal<JWTPrincipal>()
             val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt()
@@ -99,7 +103,12 @@ fun Route.rutesDelsProductesDUnaLlista() {
                     call.respond(HttpStatusCode.NotFound, "Llista no trobada")
                 }
             }
+        }.describe {
+            summary = "Afegeix un producte a la llista"
+            description = "Notifica via WebSocket als propietaris de la llista. Retorna 400 si el producte ja hi és"
+            tag("Productes d'una llista")
         }
+
         patch("/{idProducte}") {
             val idLlista = call.parameters["idLlista"]?.toIntOrNull()
             val idProducte = call.parameters["idProducte"]?.toIntOrNull()
@@ -150,6 +159,10 @@ fun Route.rutesDelsProductesDUnaLlista() {
                     call.respond(HttpStatusCode.NotFound, "Llista no trobada")
                 }
             }
+        }.describe {
+            summary = "Actualitza un producte de la llista"
+            description = "Permet modificar quantitat, unitat, estat de compra i qui ha comprat. Notifica via WebSocket"
+            tag("Productes d'una llista")
         }
 
         delete("/{idProducte}") {
@@ -196,6 +209,10 @@ fun Route.rutesDelsProductesDUnaLlista() {
                     call.respond(HttpStatusCode.NotFound, "Llista no trobada")
                 }
             }
+        }.describe {
+            summary = "Elimina un producte de la llista"
+            description = "Notifica via WebSocket als propietaris de la llista"
+            tag("Productes d'una llista")
         }
     }
 }

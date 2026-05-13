@@ -17,8 +17,10 @@ import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
+import io.ktor.openapi.OpenApiInfo
 import io.ktor.server.plugins.openapi.openAPI
 import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.routing.openapi.OpenApiDocSource
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -36,16 +38,32 @@ import kotlinx.html.title
 
 fun Application.configureRouting(userRepository: RepositoriUsuaris) {
     routing {
-
-        // Això crea la ruta /swagger on veuràs la interfície
-        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml") {
-            //displayOperationId = true
+       // Swagger UI: usa el routing tree per generar el spec dinàmicament
+        swaggerUI(path = "swagger") {
+            source = OpenApiDocSource.Routing()
+            // Document base: info i servidor (el security scheme es registra a Application.kt)
+            info = OpenApiInfo(title = "La Llista de la Compra API", version = "1.0.0")
+            servers {
+                server("http://127.0.0.1:8080") {
+                    description = "Servidor local de desenvolupament"
+                }
+            }
         }
 
-        // Aquesta és la ruta que genera realment el fitxer de dades
-        openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
+        // Endpoint que retorna el JSON/YAML del spec (per a clients externs)
+        openAPI(path = "openapi") {
+            source = OpenApiDocSource.Routing()
+            info = OpenApiInfo(title = "La Llista de la Compra API", version = "1.0.0")
+            servers {
+                server("http://127.0.0.1:8080") {
+                    description = "Servidor local de desenvolupament"
+                }
+            }
+        }
 
+/*
         //region Proves prèvies
+
         get("/") {
             call.respondText("Hello World!")
         }
@@ -183,7 +201,7 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
         }
 
         //endregion
-
+*/
         rutesV1()
     }
 }

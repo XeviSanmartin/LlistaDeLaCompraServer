@@ -2,9 +2,9 @@ package cat.montilivi.lallistadelacompra.plugins.routingV1
 
 import cat.montilivi.lallistadelacompra.model.errors.ParametresInvalidException
 import cat.montilivi.lallistadelacompra.model.errors.RecursNoTrobatException
-import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.websockets.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.requests.PeticioLlista
-import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.websockets.TipusAccio
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import io.ktor.http.HttpStatusCode
@@ -18,6 +18,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.routing.openapi.describe
 
 fun Route.rutesDeLesLlistesDeLaCompra(){
     route("llistes"){
@@ -41,6 +42,10 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
                 ?: throw RecursNoTrobatException (idUsuari)
 
             call.respond(llistes)
+        }.describe {
+            summary = "Llista les meves llistes de la compra"
+            description = "Retorna totes les llistes de les quals l'usuari autenticat és propietari"
+            tag("Llistes")
         }
 
         // POST: Creació d'una llista nova
@@ -55,6 +60,10 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
                 val idLlista = RepositoriLlistesDeLaCompra.creaLlista(request.nom, idUsuari)
                 call.respond(HttpStatusCode.Created, mapOf("idLlista" to idLlista))
             }
+        }.describe {
+            summary = "Crea una llista nova"
+            description = "El propietari de la llista serà l'usuari autenticat"
+            tag("Llistes")
         }
 
         // PATCH: Actualitzar el nom d'una llista específica
@@ -83,6 +92,10 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
             } else {
                 call.respond(HttpStatusCode.NotFound, "Llista no trobada o no tens permís")
             }
+        }.describe {
+            summary = "Canvia el nom d'una llista"
+            description = "Només el propietari pot modificar la llista. Notifica via WebSocket als altres propietaris"
+            tag("Llistes")
         }
 
         // DELETE: Esborrar una llista
@@ -100,6 +113,10 @@ fun Route.rutesDeLesLlistesDeLaCompra(){
             } else {
                 call.respond(HttpStatusCode.NotFound, "Llista no trobada o no tens permís")
             }
+        }.describe {
+            summary = "Esborra una llista"
+            description = "Només el propietari pot esborrar la llista"
+            tag("Llistes")
         }
     }
 }

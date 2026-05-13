@@ -11,6 +11,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.routing.openapi.describe
 
 fun Route.rutesDeLesCategories() {
     route("categories") {
@@ -19,6 +20,9 @@ fun Route.rutesDeLesCategories() {
         get {
             val categories = RepositoriCategories.obtenTotes()
             call.respond(categories)
+        }.describe {
+            summary = "Llista totes les categories"
+            tag("Categories")
         }
 
         // POST: Crear-ne una
@@ -26,6 +30,9 @@ fun Route.rutesDeLesCategories() {
             val peticio = call.receive<PeticioCategoria>() // Un model amb nom i icona
             val idCategoria = RepositoriCategories.creaCategoria(peticio.nom)
             call.respond(HttpStatusCode.Created, mapOf("idCategoria" to idCategoria))
+        }.describe {
+            summary = "Crea una categoria nova"
+            tag("Categories")
         }
 
         // PATCH: Modificar-ne una
@@ -34,6 +41,9 @@ fun Route.rutesDeLesCategories() {
             val peticio = call.receive<PeticioCategoria>()
             val exit = RepositoriCategories.actualitzaNomCategoria(id, peticio.nom)
             if (exit) call.respond(HttpStatusCode.OK, mapOf("status" to "Categoria actualitzada")) else call.respond(HttpStatusCode.NotFound)
+        }.describe {
+            summary = "Modifica el nom d'una categoria"
+            tag("Categories")
         }
 
         // DELETE: Esborrar
@@ -41,6 +51,9 @@ fun Route.rutesDeLesCategories() {
             val id = call.parameters["idCategoria"]?.toIntOrNull() ?: return@delete call.respond(HttpStatusCode.BadRequest)
             val exit = RepositoriCategories.eliminaCategoria(id)
             if (exit) call.respond(HttpStatusCode.OK, mapOf("status" to "Categoria esborrada")) else call.respond(HttpStatusCode.NotFound)
+        }.describe {
+            summary = "Esborra una categoria"
+            tag("Categories")
         }
     }
 }

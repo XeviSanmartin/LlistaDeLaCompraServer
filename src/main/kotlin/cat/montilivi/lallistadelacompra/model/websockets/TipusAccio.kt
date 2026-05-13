@@ -1,4 +1,4 @@
-package cat.montilivi.lallistadelacompra.model.websockects
+package cat.montilivi.lallistadelacompra.model.websockets
 
 import kotlinx.serialization.Serializable
 

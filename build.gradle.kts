@@ -57,6 +57,9 @@ dependencies {
     //HikariPC
     implementation("com.zaxxer:HikariCP:5.1.0")
 
+    //CORS
+    implementation("io.ktor:ktor-server-cors:3.4.1")
+
     //Documentació automàtica
     implementation("io.ktor:ktor-server-swagger:3.4.1")
     implementation("io.ktor:ktor-server-openapi:3.4.1")

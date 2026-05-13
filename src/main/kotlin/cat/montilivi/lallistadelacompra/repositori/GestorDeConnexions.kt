@@ -1,9 +1,9 @@
 package cat.montilivi.lallistadelacompra.repositori
 
-import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.websockets.EsdevenimentLlista
 import cat.montilivi.lallistadelacompra.model.bbdd.ProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.websockects.SessioWebSocket
-import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.websockets.SessioWebSocket
+import cat.montilivi.lallistadelacompra.model.websockets.TipusAccio
 import io.ktor.server.websocket.sendSerialized
 import java.util.concurrent.ConcurrentHashMap
 
