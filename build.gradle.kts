@@ -38,6 +38,7 @@ dependencies {
 
     // Driver de SQLite
     implementation("org.xerial:sqlite-jdbc:$sqlite_jdbc_version")
+    implementation("io.ktor:ktor-server-host-common:3.4.1")
     runtimeOnly("org.xerial:sqlite-jdbc:${sqlite_jdbc_version}")
 
     //Encriptador per als paswords
@@ -49,6 +50,17 @@ dependencies {
 
     //WebSockets
     implementation("io.ktor:ktor-server-websockets:3.4.1")
+
+    //StatusPage
+    implementation("io.ktor:ktor-server-status-pages:3.4.1")
+
+    //HikariPC
+    implementation("com.zaxxer:HikariCP:5.1.0")
+
+    //Documentació automàtica
+    implementation("io.ktor:ktor-server-swagger:3.4.1")
+    implementation("io.ktor:ktor-server-openapi:3.4.1")
+    implementation("io.ktor:ktor-server-routing-openapi:3.4.1")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

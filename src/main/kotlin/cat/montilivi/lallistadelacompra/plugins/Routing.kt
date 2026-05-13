@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.plugins
 
-import cat.montilivi.lallistadelacompra.model.SessioUsuari
+import cat.montilivi.lallistadelacompra.model.autentificacio.SessioUsuari
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesCategories
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesLlistesDeLaCompra
@@ -17,9 +17,12 @@ import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
+import io.ktor.server.plugins.openapi.openAPI
+import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import io.ktor.server.sessions.clear
 import io.ktor.server.sessions.sessions
 import io.ktor.server.sessions.set
@@ -33,6 +36,14 @@ import kotlinx.html.title
 
 fun Application.configureRouting(userRepository: RepositoriUsuaris) {
     routing {
+
+        // Això crea la ruta /swagger on veuràs la interfície
+        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml") {
+            //displayOperationId = true
+        }
+
+        // Aquesta és la ruta que genera realment el fitxer de dades
+        openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
         //region Proves prèvies
         get("/") {
@@ -109,6 +120,10 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
             get{
                 call.respond(RepositoriUsuaris.obtenTots())
             }
+        }.describe {
+            summary = "Llista els usuaris registrats"
+            description = "Aquest endpoint no estarà disponible en producció"
+4
         }
 
         authenticate("auth-basic") {

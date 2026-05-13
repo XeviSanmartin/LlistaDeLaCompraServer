@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.repositori
 
-import cat.montilivi.lallistadelacompra.model.Categoria
+import cat.montilivi.lallistadelacompra.model.bbdd.Categoria
 
 object FAKERepositoriDeCategories {
     fun obtenTotes():List<Categoria>{

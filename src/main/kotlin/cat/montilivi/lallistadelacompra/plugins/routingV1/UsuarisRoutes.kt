@@ -1,11 +1,11 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
-import cat.montilivi.lallistadelacompra.model.PeticioActualitzacioUsuari
-import cat.montilivi.lallistadelacompra.model.PeticioRegistre
-import cat.montilivi.lallistadelacompra.model.SessioUsuari
-import cat.montilivi.lallistadelacompra.model.TipusAccio
-import cat.montilivi.lallistadelacompra.model.toCampActualitzable
+import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.requests.PeticioActualitzacioUsuari
+import cat.montilivi.lallistadelacompra.model.requests.PeticioRegistre
+import cat.montilivi.lallistadelacompra.model.autentificacio.SessioUsuari
+import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
@@ -51,13 +51,19 @@ fun Route.rutesDelsUsuaris() {
         }
     }
     post("registre") {
+        //region Versió sense status page
+//        val peticio = call.receive<PeticioRegistre>()
+//        try {
+//            val id = RepositoriUsuaris.creaUsuari(peticio.nomUsuari, peticio.motDePas, peticio.alias)
+//            call.respond(HttpStatusCode.Created, mapOf("id" to id))
+//        } catch (e: Exception) {
+//            call.respond(HttpStatusCode.Conflict, "Ja existeix un usuari amb aquest nom d'usuari")
+//        }
+        //endregion
         val peticio = call.receive<PeticioRegistre>()
-        try {
-            val id = RepositoriUsuaris.creaUsuari(peticio.nomUsuari, peticio.motDePas, peticio.alias)
-            call.respond(HttpStatusCode.Created, mapOf("id" to id))
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.Conflict, "Ja existeix un usuari amb aquest nom d'usuari")
-        }
+        val id = RepositoriUsuaris.creaUsuari(peticio.nomUsuari, peticio.motDePas, peticio.alias)
+        // Si l'usuari existeix es llançarà una SQLException.
+        call.respond(HttpStatusCode.Created, mapOf("id" to id))
     }
     // Aquesta ruta és només per a testing, no l'hauria de tenir en producció
     get("usuaris"){

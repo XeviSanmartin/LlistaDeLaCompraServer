@@ -1,5 +1,6 @@
-package cat.montilivi.lallistadelacompra.model
+package cat.montilivi.lallistadelacompra.model.websockects
 
+import cat.montilivi.lallistadelacompra.model.bbdd.ProducteDeLaLlista
 import kotlinx.serialization.Serializable
 
 @Serializable

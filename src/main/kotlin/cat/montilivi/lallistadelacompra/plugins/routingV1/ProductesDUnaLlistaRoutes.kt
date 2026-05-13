@@ -1,10 +1,10 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
-import cat.montilivi.lallistadelacompra.model.PeticioActualitzacioProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.PeticioProducteDeLaLlista
-import cat.montilivi.lallistadelacompra.model.TipusAccio
-import cat.montilivi.lallistadelacompra.model.toCampActualitzable
+import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.requests.PeticioActualitzacioProducteDeLaLlista
+import cat.montilivi.lallistadelacompra.model.requests.PeticioProducteDeLaLlista
+import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
+import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista

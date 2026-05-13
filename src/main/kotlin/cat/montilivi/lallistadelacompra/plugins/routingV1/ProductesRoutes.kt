@@ -1,8 +1,7 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.PeticioProducte
-import cat.montilivi.lallistadelacompra.model.toCampActualitzable
-import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
+import cat.montilivi.lallistadelacompra.model.requests.PeticioProducte
+import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProductes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive

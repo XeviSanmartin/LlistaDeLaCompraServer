@@ -7,6 +7,7 @@ import cat.montilivi.lallistadelacompra.plugins.JwtConfig
 import cat.montilivi.lallistadelacompra.plugins.configureSecurity
 import cat.montilivi.lallistadelacompra.plugins.configureSockets
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
+import configureStatusPages
 import io.ktor.server.application.*
 import io.ktor.server.cio.EngineMain
 
@@ -15,12 +16,13 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    DatabaseFactory.init()
+    DatabaseFactory.init(environment.config)
     //DatabaseFactory.poblaLaBBDD()
     DatabaseFactory.poblaLaBBDDUtilitzantElsRepositoris()
     JwtConfig.inicialitza(environment.config)
     configureSecurity(RepositoriUsuaris)
     configureSerialization()
     configureSockets()
+    configureStatusPages()
     configureRouting(RepositoriUsuaris)
 }

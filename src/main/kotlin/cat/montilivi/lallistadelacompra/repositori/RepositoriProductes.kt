@@ -2,8 +2,8 @@ package cat.montilivi.lallistadelacompra.repositori
 
 import cat.montilivi.lallistadelacompra.db.Productes
 import cat.montilivi.lallistadelacompra.db.DatabaseFactory.dbQuery
-import cat.montilivi.lallistadelacompra.model.Producte
-import cat.montilivi.lallistadelacompra.model.CampActualitzable
+import cat.montilivi.lallistadelacompra.model.bbdd.Producte
+import cat.montilivi.lallistadelacompra.model.eines.CampActualitzable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert

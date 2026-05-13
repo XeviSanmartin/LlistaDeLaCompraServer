@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.repositori
 
-import cat.montilivi.lallistadelacompra.model.Producte
+import cat.montilivi.lallistadelacompra.model.bbdd.Producte
 
 object FAKERepositoriDeProductes {
     fun obtenTots():List<Producte> {

@@ -5,8 +5,8 @@ import cat.montilivi.lallistadelacompra.db.LlistesPropietaris
 import cat.montilivi.lallistadelacompra.db.LlistesPropietaris.idLlista
 import cat.montilivi.lallistadelacompra.db.UsuarisAmics
 import cat.montilivi.lallistadelacompra.db.Usuaris
-import cat.montilivi.lallistadelacompra.model.CampActualitzable
-import cat.montilivi.lallistadelacompra.model.Usuari
+import cat.montilivi.lallistadelacompra.model.eines.CampActualitzable
+import cat.montilivi.lallistadelacompra.model.bbdd.Usuari
 import cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.ResultRow

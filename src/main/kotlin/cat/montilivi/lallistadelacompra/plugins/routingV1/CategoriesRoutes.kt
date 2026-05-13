@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.PeticioCategoria
+import cat.montilivi.lallistadelacompra.model.requests.PeticioCategoria
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive

@@ -1,6 +1,6 @@
 package cat.montilivi.lallistadelacompra.plugins
 
-import cat.montilivi.lallistadelacompra.model.SessioUsuari
+import cat.montilivi.lallistadelacompra.model.autentificacio.SessioUsuari
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import cat.montilivi.lallistadelacompra.utils.EncriptadorDePasswords
 import com.auth0.jwt.JWT

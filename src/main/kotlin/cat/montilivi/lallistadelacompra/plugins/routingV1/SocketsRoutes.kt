@@ -1,10 +1,9 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
-import cat.montilivi.lallistadelacompra.model.SessioWebSocket
-import cat.montilivi.lallistadelacompra.model.TipusAccio
+import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.websockects.SessioWebSocket
+import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
-import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.routing.Route

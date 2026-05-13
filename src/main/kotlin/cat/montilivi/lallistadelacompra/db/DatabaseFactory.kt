@@ -8,6 +8,9 @@ import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProductes
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
+import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
@@ -20,11 +23,36 @@ import org.slf4j.LoggerFactory
 object DatabaseFactory {
     private val logger = LoggerFactory.getLogger("DatabaseFactory")
 
-    fun init() {
-        // Configuració de SQLite. 'llistes_de_la_compra.db' es crearà a l'arrel del projecte.
-        val jdbcURL = "jdbc:sqlite:./llistes_de_la_compra.db"
-        val database = Database.connect(jdbcURL, driver = "org.sqlite.JDBC")
+    fun init(config: ApplicationConfig) {
+        //region abans Kikary
+//        val driverClass = config.property("storage.driverClassName").getString()
+//        val jdbcUrl = config.property("storage.jdbcURL").getString()
+//        val dbUser = config.property("storage.user").getString()
+//        val dbPassword = config.property("storage.password").getString()
+//
+//        // Configuració de SQLite. 'llistes_de_la_compra.db' es crearà a l'arrel del projecte.
+//        //  val jdbcURL = "jdbc:sqlite:./llistes_de_la_compra.db"
+//        //  val database = Database.connect(jdbcURL, driver = "org.sqlite.JDBC")
+//
+//        val database = Database.connect(jdbcUrl, driver = driverClass, user = dbUser, password = dbPassword)
+        //endregion
 
+        val hikariConfig = HikariConfig().apply{
+            //Valors llegits del YAML
+            driverClassName = config.property("storage.driverClassName").getString()
+            jdbcUrl = config.property("storage.jdbcURL").getString()
+            username = config.property("storage.user").getString()
+            password = config.property("storage.password").getString()
+
+            //Paàmetres d'optimització del pool
+            maximumPoolSize = 10
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            validate()
+        }
+
+        val dataSource = HikariDataSource(hikariConfig)
+        val database = Database.connect(dataSource)
         // Activa el suport de claus foranes (Foreign Keys) en SQLite (important!)
         transaction(database) {
             exec("PRAGMA foreign_keys = ON;", emptyList(), StatementType.OTHER)

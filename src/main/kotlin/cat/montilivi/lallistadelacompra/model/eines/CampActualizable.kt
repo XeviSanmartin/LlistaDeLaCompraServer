@@ -1,4 +1,4 @@
-package cat.montilivi.lallistadelacompra.model
+package cat.montilivi.lallistadelacompra.model.eines
 
 sealed class CampActualitzable<out T> {
     data object SenseCanvi : CampActualitzable<Nothing>()

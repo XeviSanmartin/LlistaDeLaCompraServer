@@ -1,4 +1,4 @@
-package cat.montilivi.lallistadelacompra.model
+package cat.montilivi.lallistadelacompra.model.autentificacio
 
 import io.ktor.server.auth.Principal
 import kotlinx.serialization.Serializable

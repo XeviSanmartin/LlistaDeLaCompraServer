@@ -4,8 +4,8 @@ import cat.montilivi.lallistadelacompra.db.DatabaseFactory.dbQuery
 import cat.montilivi.lallistadelacompra.db.LlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.db.LlistesPropietaris
 import cat.montilivi.lallistadelacompra.db.ProductesDeLaLlista
-import cat.montilivi.lallistadelacompra.model.CampActualitzable
-import cat.montilivi.lallistadelacompra.model.LlistaDeLaCompra
+import cat.montilivi.lallistadelacompra.model.eines.CampActualitzable
+import cat.montilivi.lallistadelacompra.model.bbdd.LlistaDeLaCompra
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and

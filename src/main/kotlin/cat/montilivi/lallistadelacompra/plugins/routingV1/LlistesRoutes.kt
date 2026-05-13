@@ -1,11 +1,12 @@
 package cat.montilivi.lallistadelacompra.plugins.routingV1
 
-import cat.montilivi.lallistadelacompra.model.EsdevenimentLlista
-import cat.montilivi.lallistadelacompra.model.PeticioLlista
-import cat.montilivi.lallistadelacompra.model.TipusAccio
+import cat.montilivi.lallistadelacompra.model.errors.ParametresInvalidException
+import cat.montilivi.lallistadelacompra.model.errors.RecursNoTrobatException
+import cat.montilivi.lallistadelacompra.model.websockects.EsdevenimentLlista
+import cat.montilivi.lallistadelacompra.model.requests.PeticioLlista
+import cat.montilivi.lallistadelacompra.model.websockects.TipusAccio
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriLlistesDeLaCompra
-import cat.montilivi.lallistadelacompra.repositori.RepositoriProducteDeLaLlista
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -21,15 +22,25 @@ import io.ktor.server.routing.route
 fun Route.rutesDeLesLlistesDeLaCompra(){
     route("llistes"){
         get {
+            //region Versió prèvia a StatusPages
+//            val principal = call.principal<JWTPrincipal>()
+//            val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt()
+//
+//            if (idUsuari != null) {
+//                val llistes = RepositoriLlistesDeLaCompra.cercaLlistesPerPropietari(idUsuari)
+//                call.respond(llistes)
+//            } else {
+//                call.respond(HttpStatusCode.Unauthorized)
+//            }
+            //endregion
             val principal = call.principal<JWTPrincipal>()
             val idUsuari = principal?.payload?.getClaim("idUsuari")?.asInt()
+                ?: throw ParametresInvalidException("L'IdUsuari ha de ser un número")
 
-            if (idUsuari != null) {
-                val llistes = RepositoriLlistesDeLaCompra.cercaLlistesPerPropietari(idUsuari)
-                call.respond(llistes)
-            } else {
-                call.respond(HttpStatusCode.Unauthorized)
-            }
+            val llistes = RepositoriLlistesDeLaCompra.cercaLlistesPerPropietari(idUsuari)
+                ?: throw RecursNoTrobatException (idUsuari)
+
+            call.respond(llistes)
         }
 
         // POST: Creació d'una llista nova
