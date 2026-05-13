@@ -52,6 +52,14 @@ fun Route.rutesDelsUsuaris() {
         summary = "Inicia sessió"
         description = "Rep username i password com a form data (application/x-www-form-urlencoded) i retorna un token JWT. Copia el token i clica 'Authorize' a la part superior per usar els endpoints protegits."
         tag("Autenticació")
+        requestBody {
+            description = "Credencials de l'usuari en format form-data: camps 'username' i 'password'"
+            content { }
+        }
+        responses {
+            HttpStatusCode.OK { description = "Login correcte. Retorna el token JWT a usar als endpoints protegits." }
+            HttpStatusCode.Unauthorized { description = "Credencials invàlides" }
+        }
     }
     post("registre") {
         //region Versió sense status page
@@ -67,6 +75,18 @@ fun Route.rutesDelsUsuaris() {
         val id = RepositoriUsuaris.creaUsuari(peticio.nomUsuari, peticio.motDePas, peticio.alias)
         // Si l'usuari existeix es llançarà una SQLException.
         call.respond(HttpStatusCode.Created, mapOf("id" to id))
+    }.describe {
+        summary = "Registra un usuari nou"
+        description = "Crea un compte nou amb nomUsuari, motDePas i alias. El nomUsuari ha de ser únic."
+        tag("Autenticació")
+        requestBody {
+            description = "Dades del nou usuari: nomUsuari (únic), motDePas i alias"
+            content { }
+        }
+        responses {
+            HttpStatusCode.Created { description = "Usuari creat correctament. Retorna l'id del nou usuari." }
+            HttpStatusCode.Conflict { description = "Ja existeix un usuari amb aquest nomUsuari" }
+        }
     }
 
     // Aquesta ruta és només per a testing, no l'hauria de tenir en producció
@@ -78,6 +98,9 @@ fun Route.rutesDelsUsuaris() {
         summary = "Llista tots els usuaris (només per a testing)"
         description = "No hauria d'estar disponible en producció"
         tag("Usuaris")
+        responses {
+            HttpStatusCode.OK { description = "Retorna la llista completa d'usuaris registrats" }
+        }
     }
 
     // Rutes protegides (requereixen Token)
@@ -93,7 +116,13 @@ fun Route.rutesDelsUsuaris() {
                 else call.respond(HttpStatusCode.NotFound)
             }.describe {
                 summary = "Obté el meu perfil"
+                description = "Retorna les dades de l'usuari autenticat amb el token JWT."
                 tag("Usuaris")
+                responses {
+                    HttpStatusCode.OK { description = "Dades del perfil de l'usuari actual" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                    HttpStatusCode.NotFound { description = "Usuari no trobat a la base de dades" }
+                }
             }
 
             // Actualitza el meu perfil
@@ -113,6 +142,15 @@ fun Route.rutesDelsUsuaris() {
                 summary = "Actualitza el meu perfil"
                 description = "Permet modificar nomUsuari, motDePas i/o alias. Tots els camps són opcionals"
                 tag("Usuaris")
+                requestBody {
+                    description = "Camps a actualitzar: nomUsuari, motDePas i/o alias (tots opcionals)"
+                    content { }
+                }
+                responses {
+                    HttpStatusCode.OK { description = "Perfil actualitzat correctament" }
+                    HttpStatusCode.BadRequest { description = "No s'ha pogut actualitzar el perfil" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                }
             }
 
             delete {
@@ -123,7 +161,13 @@ fun Route.rutesDelsUsuaris() {
                 else call.respond(HttpStatusCode.BadRequest)
             }.describe {
                 summary = "Elimina el meu compte"
+                description = "Elimina permanentment el compte de l'usuari autenticat."
                 tag("Usuaris")
+                responses {
+                    HttpStatusCode.OK { description = "Compte eliminat correctament" }
+                    HttpStatusCode.BadRequest { description = "No s'ha pogut eliminar el compte" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                }
             }
         }
 
@@ -137,7 +181,12 @@ fun Route.rutesDelsUsuaris() {
                 call.respond(amics)
             }.describe {
                 summary = "Llista els meus amics"
+                description = "Retorna la llista d'amics de l'usuari autenticat."
                 tag("Usuaris")
+                responses {
+                    HttpStatusCode.OK { description = "Llista d'amics retornada correctament" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                }
             }
 
             // POST: Afegir un amic (per ID)
@@ -157,7 +206,19 @@ fun Route.rutesDelsUsuaris() {
                 } else call.respond(HttpStatusCode.BadRequest, "No s'ha pogut afegir l'amic")
             }.describe {
                 summary = "Afegeix un amic per ID"
+                description = "Afegeix l'usuari identificat per idAmic a la llista d'amics. Envia una notificació via WebSocket a l'amic."
                 tag("Usuaris")
+                parameters {
+                    path("idAmic") {
+                        description = "Identificador únic de l'usuari a afegir com a amic"
+                        required = true
+                    }
+                }
+                responses {
+                    HttpStatusCode.Created { description = "Amic afegit correctament" }
+                    HttpStatusCode.BadRequest { description = "No s'ha pogut afegir l'amic (id invàlid o ja és amic)" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                }
             }
 
             // DELETE: Treure un amic
@@ -177,7 +238,20 @@ fun Route.rutesDelsUsuaris() {
                 } else call.respond(HttpStatusCode.NotFound)
             }.describe {
                 summary = "Elimina un amic per ID"
+                description = "Elimina l'usuari identificat per idAmic de la llista d'amics. Envia una notificació via WebSocket a l'amic."
                 tag("Usuaris")
+                parameters {
+                    path("idAmic") {
+                        description = "Identificador únic de l'usuari a eliminar de la llista d'amics"
+                        required = true
+                    }
+                }
+                responses {
+                    HttpStatusCode.OK { description = "Amic eliminat correctament" }
+                    HttpStatusCode.NotFound { description = "No s'ha trobat l'amic amb aquest id" }
+                    HttpStatusCode.BadRequest { description = "El paràmetre idAmic no és un enter vàlid" }
+                    HttpStatusCode.Unauthorized { description = "Token JWT absent o invàlid" }
+                }
             }
         }
     }

@@ -22,17 +22,29 @@ fun Route.rutesDeLesCategories() {
             call.respond(categories)
         }.describe {
             summary = "Llista totes les categories"
+            description = "Retorna la llista completa de categories disponibles."
             tag("Categories")
+            responses {
+                HttpStatusCode.OK { description = "Llista de categories retornada correctament" }
+            }
         }
 
         // POST: Crear-ne una
         post {
-            val peticio = call.receive<PeticioCategoria>() // Un model amb nom i icona
+            val peticio = call.receive<PeticioCategoria>()
             val idCategoria = RepositoriCategories.creaCategoria(peticio.nom)
             call.respond(HttpStatusCode.Created, mapOf("idCategoria" to idCategoria))
         }.describe {
             summary = "Crea una categoria nova"
+            description = "Crea una nova categoria amb el nom indicat al cos de la petició."
             tag("Categories")
+            requestBody {
+                description = "Dades de la nova categoria"
+                content { }
+            }
+            responses {
+                HttpStatusCode.Created { description = "Categoria creada correctament. Retorna l'id de la nova categoria." }
+            }
         }
 
         // PATCH: Modificar-ne una
@@ -43,7 +55,23 @@ fun Route.rutesDeLesCategories() {
             if (exit) call.respond(HttpStatusCode.OK, mapOf("status" to "Categoria actualitzada")) else call.respond(HttpStatusCode.NotFound)
         }.describe {
             summary = "Modifica el nom d'una categoria"
+            description = "Actualitza el nom de la categoria identificada per idCategoria."
             tag("Categories")
+            parameters {
+                path("idCategoria") {
+                    description = "Identificador únic de la categoria a modificar"
+                    required = true
+                }
+            }
+            requestBody {
+                description = "Dades actualitzades de la categoria (nou nom)"
+                content { }
+            }
+            responses {
+                HttpStatusCode.OK { description = "Categoria actualitzada correctament" }
+                HttpStatusCode.NotFound { description = "No s'ha trobat cap categoria amb aquest id" }
+                HttpStatusCode.BadRequest { description = "El paràmetre idCategoria no és un enter vàlid" }
+            }
         }
 
         // DELETE: Esborrar
@@ -53,7 +81,19 @@ fun Route.rutesDeLesCategories() {
             if (exit) call.respond(HttpStatusCode.OK, mapOf("status" to "Categoria esborrada")) else call.respond(HttpStatusCode.NotFound)
         }.describe {
             summary = "Esborra una categoria"
+            description = "Elimina permanentment la categoria identificada per idCategoria."
             tag("Categories")
+            parameters {
+                path("idCategoria") {
+                    description = "Identificador únic de la categoria a eliminar"
+                    required = true
+                }
+            }
+            responses {
+                HttpStatusCode.OK { description = "Categoria esborrada correctament" }
+                HttpStatusCode.NotFound { description = "No s'ha trobat cap categoria amb aquest id" }
+                HttpStatusCode.BadRequest { description = "El paràmetre idCategoria no és un enter vàlid" }
+            }
         }
     }
 }

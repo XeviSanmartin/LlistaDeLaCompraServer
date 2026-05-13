@@ -1,33 +1,21 @@
 package cat.montilivi.lallistadelacompra.plugins
 
-import cat.montilivi.lallistadelacompra.model.autentificacio.SessioUsuari
-import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesCategories
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDeLesLlistesDeLaCompra
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductes
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsProductesDUnaLlista
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsSockets
 import cat.montilivi.lallistadelacompra.plugins.routingV1.rutesDelsUsuaris
-import cat.montilivi.lallistadelacompra.repositori.FAKERepositoriDeProductes
-import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
-import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.principal
 import io.ktor.server.html.respondHtml
 import io.ktor.openapi.OpenApiInfo
 import io.ktor.server.plugins.openapi.openAPI
 import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.routing.openapi.OpenApiDocSource
-import io.ktor.server.request.receiveParameters
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.openapi.describe
-import io.ktor.server.sessions.clear
-import io.ktor.server.sessions.sessions
-import io.ktor.server.sessions.set
 import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.div
@@ -49,6 +37,10 @@ fun Application.configureRouting(userRepository: RepositoriUsuaris) {
                 }
             }
         }
+
+
+
+
 
         // Endpoint que retorna el JSON/YAML del spec (per a clients externs)
         openAPI(path = "openapi") {
