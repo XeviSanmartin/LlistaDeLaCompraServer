@@ -22,7 +22,7 @@ fun Application.module() {
     //DatabaseFactory.poblaLaBBDD()
     DatabaseFactory.poblaLaBBDDUtilitzantElsRepositoris()
     JwtConfig.inicialitza(environment.config)
-    configureHTTP()          // CORS - ha d'anar abans del routing
+    //configureHTTP()          // CORS - ha d'anar abans del routing (crec que no cal)
     configureSecurity(RepositoriUsuaris)
     // Registrem el security scheme de JWT per al Swagger UI
     // "auth-jwt" és el nom del provider definit a Security.kt

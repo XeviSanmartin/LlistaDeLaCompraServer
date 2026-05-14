@@ -10,6 +10,7 @@ import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
 import io.ktor.http.HttpStatusCode
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -81,7 +82,7 @@ fun Route.rutesDelsUsuaris() {
         tag("Autenticació")
         requestBody {
             description = "Dades del nou usuari: nomUsuari (únic), motDePas i alias"
-            content { }
+            schema = jsonSchema<PeticioRegistre>()
         }
         responses {
             HttpStatusCode.Created { description = "Usuari creat correctament. Retorna l'id del nou usuari." }
@@ -144,7 +145,7 @@ fun Route.rutesDelsUsuaris() {
                 tag("Usuaris")
                 requestBody {
                     description = "Camps a actualitzar: nomUsuari, motDePas i/o alias (tots opcionals)"
-                    content { }
+                    schema = jsonSchema<PeticioActualitzacioUsuari>()
                 }
                 responses {
                     HttpStatusCode.OK { description = "Perfil actualitzat correctament" }

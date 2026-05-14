@@ -3,6 +3,7 @@ package cat.montilivi.lallistadelacompra.plugins.routingV1
 import cat.montilivi.lallistadelacompra.model.requests.PeticioCategoria
 import cat.montilivi.lallistadelacompra.repositori.RepositoriCategories
 import io.ktor.http.HttpStatusCode
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -40,7 +41,7 @@ fun Route.rutesDeLesCategories() {
             tag("Categories")
             requestBody {
                 description = "Dades de la nova categoria"
-                content { }
+                schema = jsonSchema<PeticioCategoria>()
             }
             responses {
                 HttpStatusCode.Created { description = "Categoria creada correctament. Retorna l'id de la nova categoria." }
@@ -65,7 +66,7 @@ fun Route.rutesDeLesCategories() {
             }
             requestBody {
                 description = "Dades actualitzades de la categoria (nou nom)"
-                content { }
+                schema = jsonSchema<PeticioCategoria>()
             }
             responses {
                 HttpStatusCode.OK { description = "Categoria actualitzada correctament" }
