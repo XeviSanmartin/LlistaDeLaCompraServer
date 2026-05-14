@@ -9,8 +9,10 @@ import cat.montilivi.lallistadelacompra.model.eines.toCampActualitzable
 import cat.montilivi.lallistadelacompra.plugins.JwtConfig.generaToken
 import cat.montilivi.lallistadelacompra.repositori.GestorDeConnexions
 import cat.montilivi.lallistadelacompra.repositori.RepositoriUsuaris
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.openapi.jsonSchema
+import cat.montilivi.lallistadelacompra.model.requests.PeticioLogin
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -55,7 +57,9 @@ fun Route.rutesDelsUsuaris() {
         tag("Autenticació")
         requestBody {
             description = "Credencials de l'usuari en format form-data: camps 'username' i 'password'"
-            content { }
+            ContentType.Application.FormUrlEncoded {
+                schema = jsonSchema<PeticioLogin>()
+            }
         }
         responses {
             HttpStatusCode.OK { description = "Login correcte. Retorna el token JWT a usar als endpoints protegits." }
